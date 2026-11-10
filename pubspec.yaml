@@ -1,6 +1,6 @@
 name: alembic
 description: "Declarative Navigator 2.0 navigation for Flutter. The navigation state is a list of pages, guarded by pure rules and owned by one controller."
-version: 0.6.0
+version: 0.6.1
 
 homepage: https://github.com/gthe-miracle/alembic
 repository: https://github.com/gthe-miracle/alembic

@@ -20,11 +20,21 @@ controller.change((state) => [...state, const SettingsPage()]);
 
 ## Getting Started
 
+```shell
+flutter pub add alembic
+```
+
+or in `pubspec.yaml`:
+
 ```yaml
 dependencies:
-  alembic:
-    git:
-      url: https://github.com/gthe-miracle/alembic.git
+  alembic: ^0.6.1
+```
+
+Then import it:
+
+```dart
+import 'package:alembic/alembic.dart';
 ```
 
 ## Usage

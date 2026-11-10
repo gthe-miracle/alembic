@@ -1,3 +1,7 @@
+## 0.6.1
+
+- The README installs the package from pub.dev (`alembic: ^0.6.1`) and shows the import
+
 ## 0.6.0
 
 - **Breaking:** the package is renamed from `elixir` to `alembic`, because `elixir` is taken on pub.dev. Import
