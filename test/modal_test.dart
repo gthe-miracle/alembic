@@ -115,24 +115,42 @@ void main() {
     expect(aliases(controller), [Alias.a, Alias.sheet]);
   });
 
-  testWidgets('a drag ends the user gesture of a sheet closed under the finger', (tester) async {
+  testWidgets('a fast downward fling closes a sheet page from anywhere', (tester) async {
     final controller = await _pump(tester);
     controller.push(sheet);
     await tester.pumpAndSettle();
-    final navigator = Navigator.of(tester.element(find.text('sheet')));
+
+    await tester.fling(find.text('sheet'), const Offset(0, 60), 1000);
+    await tester.pumpAndSettle();
+
+    expect(find.text('sheet'), findsNothing);
+    expect(aliases(controller), [Alias.a]);
+  });
+
+  testWidgets('a sheet closed under the finger ignores the rest of the drag', (tester) async {
+    final controller = await _pump(tester);
+    controller.push(sheet);
+    await tester.pumpAndSettle();
 
     final gesture = await tester.startGesture(tester.getCenter(find.text('sheet')));
     await gesture.moveBy(const Offset(0, 40));
     await tester.pump();
-    expect(navigator.userGestureInProgress, isTrue);
-
     controller.pop();
     await tester.pump();
+    await gesture.moveBy(const Offset(0, -40));
     await gesture.up();
     await tester.pumpAndSettle();
 
-    expect(navigator.userGestureInProgress, isFalse);
+    expect(find.text('sheet'), findsNothing);
     expect(aliases(controller), [Alias.a]);
+  });
+
+  testWidgets('a sheet spans the width and at most 9/16 of the height', (tester) async {
+    final controller = await _pump(tester);
+    controller.push(const SheetTestPage(Alias.sheet, child: SizedBox.expand(key: Key('tall'))));
+    await tester.pumpAndSettle();
+
+    expect(tester.getRect(find.byKey(const Key('tall'))), const Rect.fromLTRB(0, 600 - 600 * 9 / 16, 800, 600));
   });
 
   testWidgets('a screen pushed over a dialog goes under it', (tester) async {

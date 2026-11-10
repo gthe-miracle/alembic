@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 
 import '../../feature/home/home_screen.dart';
 import '../../feature/settings/about_sheet.dart';
+import '../../feature/settings/draggable_sheet.dart';
 import '../../feature/settings/settings_dialog.dart';
 import '../../feature/settings/settings_scope.dart';
 import '../../feature/settings/settings_screen.dart';
@@ -25,6 +26,7 @@ enum Settings implements ElixirAlias {
   settings('settings'),
   dialog('settings_dialog'),
   about('about'),
+  draggable('draggable_sheet'),
   detail('settings_detail');
 
   const Settings(this.alias);
@@ -113,4 +115,19 @@ final class AboutSheetPage extends AppPage with ElixirSheetPage {
 
   @override
   ElixirAlias get alias => Settings.about;
+
+  // The keyboard padding makes the sheet taller than the default 9/16 of the screen.
+  @override
+  bool get isScrollControlled => true;
+}
+
+final class DraggableSheetPage extends AppPage with ElixirSheetPage {
+  const DraggableSheetPage() : super(child: const DraggableSheet());
+
+  @override
+  ElixirAlias get alias => Settings.draggable;
+
+  // A DraggableScrollableSheet sizes itself as a fraction of the full height.
+  @override
+  bool get isScrollControlled => true;
 }

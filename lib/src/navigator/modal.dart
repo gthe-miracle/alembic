@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
 import 'page.dart';
@@ -36,7 +39,9 @@ base mixin ElixirDialogPage on ElixirPage {
 }
 
 /// {@template elixir_sheet_page}
-/// Shows an [ElixirPage] as a bottom sheet: sliding up above a barrier, closed by a downward drag.
+/// Shows an [ElixirPage] as a modal bottom sheet, like Flutter's `showModalBottomSheet`: it slides up above a barrier,
+/// spans the width, takes at most 9/16 of the height unless [isScrollControlled], and closes on a downward fling or
+/// when dragged below half its height.
 ///
 /// The page is tagged [ElixirPage.modalTag], and its route is page-based and built on widgets only.
 /// ```dart
@@ -60,6 +65,13 @@ base mixin ElixirSheetPage on ElixirPage {
 
   /// Whether a downward drag closes the sheet.
   bool get enableDrag => true;
+
+  /// Whether the sheet may take the full height instead of 9/16 of it, e.g. for a [DraggableScrollableSheet].
+  bool get isScrollControlled => false;
+
+  /// Whether the sheet avoids the system intrusions at the top, left and right. Otherwise the top padding is removed
+  /// from its [MediaQuery].
+  bool get useSafeArea => false;
 
   @override
   Set<String> get tags => {...super.tags, ElixirPage.modalTag};
@@ -105,17 +117,30 @@ final class _DialogRoute extends PopupRoute<Object?> {
   );
 }
 
+// A widgets-only port of Flutter's ModalBottomSheetRoute: the same layout, timing, curves and drag rules.
 final class _SheetRoute extends PopupRoute<Object?> {
   _SheetRoute(ElixirSheetPage page) : super(settings: page);
+
+  static const Curve _curve = Cubic(0, 0, 0.2, 1);
 
   /// The downward speed, in logical pixels per second, that closes the sheet whatever its position.
   static const double _closingVelocity = 700;
 
-  /// Whether a drag of the sheet is running. A recognizer that loses the gesture arena to the content of the sheet,
-  /// e.g. a button or a list, cancels without having started, and [_settle] must not end a gesture nobody started.
-  bool _dragging = false;
+  static const double _closeProgressThreshold = 0.5;
+
+  static const double _maxHeightRatio = 9 / 16;
+
+  final GlobalKey _childKey = GlobalKey(debugLabel: 'ElixirSheetPage child');
+
+  /// Linear while a drag runs, so the sheet follows the finger; after it, the rest of the move eases from there.
+  Curve _slideCurve = _curve;
 
   ElixirSheetPage get _page => settings as ElixirSheetPage;
+
+  double get _childHeight => _childKey.currentContext!.size!.height;
+
+  /// A sheet closed under the finger is on its way out, and the rest of the drag must not bring it back.
+  bool get _dismissUnderway => controller!.status == AnimationStatus.reverse;
 
   @override
   bool get barrierDismissible => _page.barrierDismissible;
@@ -130,59 +155,104 @@ final class _SheetRoute extends PopupRoute<Object?> {
   Duration get transitionDuration => const Duration(milliseconds: 250);
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) =>
-      Semantics(
-        scopesRoute: true,
-        explicitChildNodes: true,
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: Builder(
-            builder: (context) => GestureDetector(
-              onVerticalDragStart: _page.enableDrag ? (_) => _startDrag() : null,
-              onVerticalDragUpdate: _page.enableDrag ? (details) => _drag(details, context.size?.height) : null,
-              onVerticalDragEnd: _page.enableDrag ? (details) => _settle(details.primaryVelocity ?? 0) : null,
-              onVerticalDragCancel: _page.enableDrag ? () => _settle(0) : null,
-              child: _page.child,
-            ),
-          ),
-        ),
-      );
-
-  void _startDrag() {
-    _dragging = true;
-    navigator?.didStartUserGesture();
-  }
-
-  // The drag follows the finger linearly; the slide keeps no curve, so it does not jump when a drag starts.
-  void _drag(DragUpdateDetails details, double? height) {
-    if (height == null || height == 0) return;
-    controller!.value -= details.primaryDelta! / height;
-  }
-
-  void _settle(double velocity) {
-    if (!_dragging) return;
-    _dragging = false;
-    final navigator = this.navigator;
-    if (navigator == null) return;
-    // A sheet closed under the finger is already on its way out; only the gesture is left to end.
-    if (isActive) {
-      if (velocity > _closingVelocity || (velocity >= 0 && controller!.value < 0.5)) {
-        navigator.pop();
-      } else {
-        controller!.forward();
-      }
-    }
-    navigator.didStopUserGesture();
-  }
+  Duration get reverseTransitionDuration => const Duration(milliseconds: 200);
 
   @override
-  Widget buildTransitions(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) => SlideTransition(
-    position: animation.drive(Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)),
-    child: child,
+  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+    Widget sheet = NotificationListener<DraggableScrollableNotification>(
+      onNotification: _extentChanged,
+      child: KeyedSubtree(key: _childKey, child: _page.child),
+    );
+    if (_page.enableDrag) {
+      sheet = RawGestureDetector(
+        excludeFromSemantics: true,
+        gestures: {
+          VerticalDragGestureRecognizer: GestureRecognizerFactoryWithHandlers<VerticalDragGestureRecognizer>(
+            () => VerticalDragGestureRecognizer(debugOwner: this),
+            (recognizer) => recognizer
+              ..onStart = _handleDragStart
+              ..onUpdate = _handleDragUpdate
+              ..onEnd = _handleDragEnd
+              ..onlyAcceptDragOnThreshold = true,
+          ),
+        },
+        child: sheet,
+      );
+    }
+    sheet = AnimatedBuilder(
+      animation: animation,
+      builder: (context, child) => Semantics(
+        scopesRoute: true,
+        explicitChildNodes: true,
+        child: ClipRect(
+          child: CustomSingleChildLayout(
+            delegate: _SheetLayout(
+              progress: _slideCurve.transform(animation.value),
+              maxHeightRatio: _page.isScrollControlled ? 1 : _maxHeightRatio,
+            ),
+            child: child,
+          ),
+        ),
+      ),
+      child: sheet,
+    );
+    return _page.useSafeArea
+        ? SafeArea(bottom: false, child: sheet)
+        : MediaQuery.removePadding(context: context, removeTop: true, child: sheet);
+  }
+
+  void _handleDragStart(DragStartDetails details) => _slideCurve = Curves.linear;
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    if (_dismissUnderway) return;
+    controller!.value -= details.primaryDelta! / _childHeight;
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    if (_dismissUnderway) return;
+    final controller = this.controller!;
+    final velocity = details.velocity.pixelsPerSecond.dy;
+    _slideCurve = Split(controller.value, endCurve: _curve);
+    if (velocity > _closingVelocity) {
+      if (controller.value > 0) unawaited(controller.fling(velocity: -velocity / _childHeight));
+      _close();
+    } else if (controller.value < _closeProgressThreshold) {
+      if (controller.value > 0) unawaited(controller.fling(velocity: -1));
+      _close();
+    } else {
+      unawaited(controller.forward());
+    }
+  }
+
+  // A DraggableScrollableSheet dragged down to its minimum closes the sheet.
+  bool _extentChanged(DraggableScrollableNotification notification) {
+    if (notification.extent == notification.minExtent && notification.shouldCloseOnMinExtent) _close();
+    return false;
+  }
+
+  void _close() {
+    if (isCurrent) navigator?.pop();
+  }
+}
+
+/// Spans the width, caps the height at [maxHeightRatio] of the screen, and slides the sheet up by [progress].
+final class _SheetLayout extends SingleChildLayoutDelegate {
+  const _SheetLayout({required this.progress, required this.maxHeightRatio});
+
+  final double progress;
+  final double maxHeightRatio;
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) => BoxConstraints(
+    minWidth: constraints.maxWidth,
+    maxWidth: constraints.maxWidth,
+    maxHeight: constraints.maxHeight * maxHeightRatio,
   );
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) => Offset(0, size.height - childSize.height * progress);
+
+  @override
+  bool shouldRelayout(_SheetLayout oldDelegate) =>
+      progress != oldDelegate.progress || maxHeightRatio != oldDelegate.maxHeightRatio;
 }
