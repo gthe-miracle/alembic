@@ -67,7 +67,7 @@ base mixin ElixirSheetPage on ElixirPage {
   bool get enableDrag => true;
 
   /// Whether the sheet may take the full height instead of 9/16 of it, e.g. for a [DraggableScrollableSheet].
-  bool get isScrollControlled => false;
+  bool get isScrollControlled => true;
 
   /// Whether the sheet avoids the system intrusions at the top, left and right. Otherwise the top padding is removed
   /// from its [MediaQuery].
