@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
 
 /// The navigation state: the pages from the root to the visible one.
-typedef ElixirNavigationState = List<ElixirPage>;
+typedef AlembicNavigationState = List<AlembicPage>;
 
-/// {@template elixir_page}
+/// {@template alembic_page}
 /// A screen of the navigation state.
 ///
 /// A page is an immutable value that is also the [Page] given to the [Navigator], so the navigator matches the pages
@@ -11,42 +11,42 @@ typedef ElixirNavigationState = List<ElixirPage>;
 ///
 /// Subclasses implement [alias] and [createRoute], usually once in a shared sealed base page:
 /// ```dart
-/// sealed class AppPage extends ElixirPage {
+/// sealed class AppPage extends AlembicPage {
 ///   const AppPage({required super.child, super.arguments, super.key});
 ///
 ///   @override
-///   Route<Object?> createRoute(BuildContext context) => ElixirPageRoute(this);
+///   Route<Object?> createRoute(BuildContext context) => AlembicPageRoute(this);
 /// }
 ///
 /// final class HomePage extends AppPage {
 ///   const HomePage() : super(child: const HomeScreen());
 ///
 ///   @override
-///   ElixirAlias get alias => Routes.home;
+///   AlembicAlias get alias => Routes.home;
 /// }
 /// ```
 ///
-/// The route must be page-based: it reads the child of its current page, `(settings as ElixirPage).child`, on every
+/// The route must be page-based: it reads the child of its current page, `(settings as AlembicPage).child`, on every
 /// build instead of capturing it once. Otherwise a new instance of a page with the same key does not reach the
-/// screen. [ElixirPageRoute] and the modal pages are page-based.
+/// screen. [AlembicPageRoute] and the modal pages are page-based.
 ///
 /// Pages compare by identity. The controller identifies them by [key].
 /// {@endtemplate}
 @immutable
-abstract base class ElixirPage extends Page<Object?> {
-  /// {@macro elixir_page}
-  const ElixirPage({required this.child, Map<String, Object?>? super.arguments, super.key, super.restorationId});
+abstract base class AlembicPage extends Page<Object?> {
+  /// {@macro alembic_page}
+  const AlembicPage({required this.child, Map<String, Object?>? super.arguments, super.key, super.restorationId});
 
   /// The tag of the pages that cover the screen with a barrier: dialogs and sheets.
   ///
-  /// `controller.removeTag(ElixirPage.modalTag)` closes all of them, and [ModalGuard] keeps them above the screens.
+  /// `controller.removeTag(AlembicPage.modalTag)` closes all of them, and [ModalGuard] keeps them above the screens.
   static const String modalTag = 'modal';
 
   /// The content of the page.
   final Widget child;
 
   /// The alias of the page, usually an enum value. The [name] comes from it.
-  ElixirAlias get alias;
+  AlembicAlias get alias;
 
   /// Marks used to address groups of pages, e.g. `controller.removeTag('checkout')`.
   Set<String> get tags => const <String>{};
@@ -96,14 +96,14 @@ abstract base class ElixirPage extends Page<Object?> {
   };
 }
 
-/// {@template elixir_page_route}
-/// A page-based route for an [ElixirPage], built on widgets only.
+/// {@template alembic_page_route}
+/// A page-based route for an [AlembicPage], built on widgets only.
 ///
 /// Every build reads the child of the current page, so replacing a page with a new instance under the same key
 /// updates the screen and keeps the state of the route.
 /// ```dart
 /// @override
-/// Route<Object?> createRoute(BuildContext context) => ElixirPageRoute(this);
+/// Route<Object?> createRoute(BuildContext context) => AlembicPageRoute(this);
 /// ```
 ///
 /// For the transitions of Material or Cupertino, use their page-based mixins in the app. Material takes the transition
@@ -137,10 +137,10 @@ abstract base class ElixirPage extends Page<Object?> {
 /// }
 /// ```
 /// {@endtemplate}
-final class ElixirPageRoute extends PageRoute<Object?> {
-  /// {@macro elixir_page_route}
-  ElixirPageRoute(
-    ElixirPage page, {
+final class AlembicPageRoute extends PageRoute<Object?> {
+  /// {@macro alembic_page_route}
+  AlembicPageRoute(
+    AlembicPage page, {
     this.transitionDuration = const Duration(milliseconds: 300),
     this.transitionsBuilder = _fade,
     super.fullscreenDialog,
@@ -163,7 +163,7 @@ final class ElixirPageRoute extends PageRoute<Object?> {
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) =>
-      (settings as ElixirPage).child;
+      (settings as AlembicPage).child;
 
   @override
   Widget buildTransitions(
@@ -180,7 +180,7 @@ final class ElixirPageRoute extends PageRoute<Object?> {
 /// The alias of a page, usually an enum value. Aliases must be unique, since the page name and key come from them.
 ///
 /// ```dart
-/// enum Routes implements ElixirAlias {
+/// enum Routes implements AlembicAlias {
 ///   home('home'),
 ///   settings('settings');
 ///
@@ -190,7 +190,7 @@ final class ElixirPageRoute extends PageRoute<Object?> {
 ///   final String alias;
 /// }
 /// ```
-abstract interface class ElixirAlias {
+abstract interface class AlembicAlias {
   /// The alias of the page.
   String get alias;
 }

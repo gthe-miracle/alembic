@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:elixir/elixir.dart';
+import 'package:alembic/alembic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,15 +12,15 @@ const c = TestPage(Alias.c);
 const d = TestPage(Alias.d);
 const e = TestPage(Alias.e);
 
-/// An outer Elixir whose `scope` page hosts an inner one.
-Future<(ElixirController, ElixirController)> _pumpNested(
+/// An outer Alembic whose `scope` page hosts an inner one.
+Future<(AlembicController, AlembicController)> _pumpNested(
   WidgetTester tester, {
-  List<ElixirPage> outerTail = const [],
-  List<ElixirGuard> innerGuards = const [],
+  List<AlembicPage> outerTail = const [],
+  List<AlembicGuard> innerGuards = const [],
 }) async {
   final inner = controllerOf([b, c], guards: innerGuards);
-  final outer = controllerOf([a, TestPage(Alias.scope, child: Elixir(controller: inner)), ...outerTail]);
-  await pumpApp(tester, Elixir(controller: outer));
+  final outer = controllerOf([a, TestPage(Alias.scope, child: Alembic(controller: inner)), ...outerTail]);
+  await pumpApp(tester, Alembic(controller: outer));
   return (outer, inner);
 }
 
@@ -42,19 +42,19 @@ Future<List<bool>> _pumpReporting(WidgetTester tester, Widget child) async {
 
 void main() {
   group('back button', () {
-    testWidgets('goes to the inner Elixir first, then to the outer one', (tester) async {
+    testWidgets('goes to the inner Alembic first, then to the outer one', (tester) async {
       final (outer, inner) = await _pumpNested(tester);
 
       expect(await back(tester), isTrue);
       expect(aliases(inner), [Alias.b]);
 
-      expect(await back(tester), isTrue, reason: 'the inner Elixir has a single page: the outer one pops');
+      expect(await back(tester), isTrue, reason: 'the inner Alembic has a single page: the outer one pops');
       expect(aliases(outer), [Alias.a]);
 
       expect(await back(tester), isFalse, reason: 'W5: the root page lets the platform close the app');
     });
 
-    testWidgets('skips an inner Elixir under a covered route', (tester) async {
+    testWidgets('skips an inner Alembic under a covered route', (tester) async {
       final (outer, inner) = await _pumpNested(tester, outerTail: const [d]);
 
       expect(await back(tester), isTrue);
@@ -64,7 +64,7 @@ void main() {
 
     testWidgets('W4: closes a dialog opened imperatively, not the page below it', (tester) async {
       final controller = controllerOf([a, b]);
-      await pumpApp(tester, Elixir(controller: controller));
+      await pumpApp(tester, Alembic(controller: controller));
       unawaited(showDialog<void>(context: tester.element(find.text('b')), builder: (_) => const Text('dialog')));
       await tester.pumpAndSettle();
 
@@ -75,7 +75,7 @@ void main() {
 
     testWidgets('W4: respects PopScope', (tester) async {
       final controller = controllerOf([a, const TestPage(Alias.b, child: PopScope(canPop: false, child: Text('b')))]);
-      await pumpApp(tester, Elixir(controller: controller));
+      await pumpApp(tester, Alembic(controller: controller));
 
       expect(await back(tester), isTrue);
       expect(aliases(controller), [Alias.a, Alias.b]);
@@ -86,7 +86,7 @@ void main() {
       NavigatorState? received;
       await pumpApp(
         tester,
-        Elixir(
+        Alembic(
           controller: controller,
           onBackButtonPressed: (navigator) async {
             received = navigator;
@@ -101,7 +101,7 @@ void main() {
       expect(received, isNotNull);
     });
 
-    testWidgets('W8: of two visible nested Elixirs the newest gets the back press first', (tester) async {
+    testWidgets('W8: of two visible nested Alembics the newest gets the back press first', (tester) async {
       final left = controllerOf([b, c]);
       final right = controllerOf([d, e]);
       final outer = controllerOf([
@@ -109,13 +109,13 @@ void main() {
           Alias.scope,
           child: Row(
             children: [
-              Expanded(child: Elixir(controller: left)),
-              Expanded(child: Elixir(controller: right)),
+              Expanded(child: Alembic(controller: left)),
+              Expanded(child: Alembic(controller: right)),
             ],
           ),
         ),
       ]);
-      await pumpApp(tester, Elixir(controller: outer));
+      await pumpApp(tester, Alembic(controller: outer));
 
       expect(await back(tester), isTrue);
       expect(aliases(right), [Alias.d]);
@@ -124,8 +124,8 @@ void main() {
 
     testWidgets('W6: the root reports for the whole tree', (tester) async {
       final inner = controllerOf([b, c]);
-      final outer = controllerOf([TestPage(Alias.scope, child: Elixir(controller: inner))]);
-      final reports = await _pumpReporting(tester, Elixir(controller: outer));
+      final outer = controllerOf([TestPage(Alias.scope, child: Alembic(controller: inner))]);
+      final reports = await _pumpReporting(tester, Alembic(controller: outer));
       expect(reports.last, isTrue, reason: 'the outer navigator cannot pop, the inner one can');
 
       // The outer navigator reports `false` for itself after this pop: the inner one must not be overwritten.
@@ -140,7 +140,7 @@ void main() {
       expect(reports.last, isFalse);
     });
 
-    testWidgets('W6: a hidden Elixir does not claim the back button', (tester) async {
+    testWidgets('W6: a hidden Alembic does not claim the back button', (tester) async {
       final visible = controllerOf([a]);
       final hidden = controllerOf([b, c]);
       final reports = await _pumpReporting(
@@ -148,8 +148,8 @@ void main() {
         IndexedStack(
           // Sibling navigators cannot share the HeroController of the app.
           children: [
-            HeroControllerScope.none(child: Elixir(controller: visible)),
-            HeroControllerScope.none(child: Elixir(controller: hidden)),
+            HeroControllerScope.none(child: Alembic(controller: visible)),
+            HeroControllerScope.none(child: Alembic(controller: hidden)),
           ],
         ),
       );
@@ -160,17 +160,17 @@ void main() {
     });
   });
 
-  group('W25: swipe-back of a route hosting a nested Elixir', () {
-    /// An outer Elixir whose swipeable `scope` page hosts [child].
-    Future<ElixirController> pumpScope(WidgetTester tester, Widget child) async {
+  group('W25: swipe-back of a route hosting a nested Alembic', () {
+    /// An outer Alembic whose swipeable `scope` page hosts [child].
+    Future<AlembicController> pumpScope(WidgetTester tester, Widget child) async {
       final outer = controllerOf([a, SwipeTestPage(Alias.scope, child: child)]);
-      await pumpApp(tester, Elixir(controller: outer));
+      await pumpApp(tester, Alembic(controller: outer));
       return outer;
     }
 
-    testWidgets('closes the pages of the nested Elixir first, then the route', (tester) async {
+    testWidgets('closes the pages of the nested Alembic first, then the route', (tester) async {
       final inner = controllerOf([const SwipeTestPage(Alias.b), const SwipeTestPage(Alias.c)]);
-      final outer = await pumpScope(tester, Elixir(controller: inner));
+      final outer = await pumpScope(tester, Alembic(controller: inner));
 
       await swipeBack(tester);
       expect(aliases(inner), [Alias.b]);
@@ -180,9 +180,9 @@ void main() {
       expect(aliases(outer), [Alias.a]);
     });
 
-    testWidgets('leaves the route under a sheet of the nested Elixir', (tester) async {
+    testWidgets('leaves the route under a sheet of the nested Alembic', (tester) async {
       final inner = controllerOf([const SwipeTestPage(Alias.b), const SheetTestPage(Alias.sheet)]);
-      final outer = await pumpScope(tester, Elixir(controller: inner));
+      final outer = await pumpScope(tester, Alembic(controller: inner));
 
       await swipeBack(tester);
       expect(aliases(inner), [Alias.b, Alias.sheet]);
@@ -195,9 +195,9 @@ void main() {
       expect(aliases(outer), [Alias.a]);
     });
 
-    testWidgets('a hidden nested Elixir does not block it', (tester) async {
+    testWidgets('a hidden nested Alembic does not block it', (tester) async {
       final inner = controllerOf([b, c]);
-      final outer = await pumpScope(tester, Visibility.maintain(visible: false, child: Elixir(controller: inner)));
+      final outer = await pumpScope(tester, Visibility.maintain(visible: false, child: Alembic(controller: inner)));
 
       await swipeBack(tester);
       expect(aliases(outer), [Alias.a]);
@@ -205,13 +205,13 @@ void main() {
 
     testWidgets('a nested onBackButtonPressed that declines the press lets the route close', (tester) async {
       final inner = controllerOf([b, c]);
-      final outer = await pumpScope(tester, Elixir(controller: inner, onBackButtonPressed: (_) async => false));
+      final outer = await pumpScope(tester, Alembic(controller: inner, onBackButtonPressed: (_) async => false));
 
       expect(await back(tester), isTrue);
       expect(aliases(outer), [Alias.a]);
     });
 
-    testWidgets('Navigator.maybePop above the nested Elixir goes to it', (tester) async {
+    testWidgets('Navigator.maybePop above the nested Alembic goes to it', (tester) async {
       final inner = controllerOf([b, c]);
       final outer = await pumpScope(
         tester,
@@ -220,7 +220,7 @@ void main() {
             Builder(
               builder: (context) => TextButton(onPressed: () => Navigator.maybePop(context), child: const Text('back')),
             ),
-            Expanded(child: Elixir(controller: inner)),
+            Expanded(child: Alembic(controller: inner)),
           ],
         ),
       );
@@ -235,9 +235,9 @@ void main() {
       expect(aliases(outer), [Alias.a]);
     });
 
-    testWidgets('a PopScope of the route does not pop the nested Elixir', (tester) async {
+    testWidgets('a PopScope of the route does not pop the nested Alembic', (tester) async {
       final inner = controllerOf([b]);
-      final outer = await pumpScope(tester, PopScope<Object?>(canPop: false, child: Elixir(controller: inner)));
+      final outer = await pumpScope(tester, PopScope<Object?>(canPop: false, child: Alembic(controller: inner)));
 
       expect(await back(tester), isTrue);
       expect(aliases(outer), [Alias.a, Alias.scope]);
@@ -251,7 +251,7 @@ void main() {
       final (outer, _) = await _pumpNested(
         tester,
         innerGuards: [
-          ElixirGuard((from, to) {
+          AlembicGuard((from, to) {
             runs++;
             return to;
           }),
@@ -275,13 +275,13 @@ void main() {
         StatefulBuilder(
           builder: (context, setState) {
             builds++;
-            return NotificationListener<ElixirNotification>(
-              // A listener rebuilding an ancestor of the Elixir.
+            return NotificationListener<AlembicNotification>(
+              // A listener rebuilding an ancestor of the Alembic.
               onNotification: (_) {
                 setState(() {});
                 return false;
               },
-              child: Elixir(controller: controller),
+              child: Alembic(controller: controller),
             );
           },
         ),
@@ -294,8 +294,8 @@ void main() {
     });
 
     testWidgets('W12: a page closed by the user and kept by a guard is shown again', (tester) async {
-      final controller = controllerOf([a, b], guards: [ElixirGuard((from, to) => from.isEmpty ? to : from)]);
-      await pumpApp(tester, Elixir(controller: controller));
+      final controller = controllerOf([a, b], guards: [AlembicGuard((from, to) => from.isEmpty ? to : from)]);
+      await pumpApp(tester, Alembic(controller: controller));
 
       Navigator.of(tester.element(find.text('b'))).pop();
       await tester.pumpAndSettle();
@@ -304,20 +304,20 @@ void main() {
       expect(find.text('b'), findsOneWidget);
     });
 
-    testWidgets('W13: Elixir.stackOf rebuilds on every change', (tester) async {
+    testWidgets('W13: Alembic.stackOf rebuilds on every change', (tester) async {
       final seen = <int>[];
       final controller = controllerOf([
         TestPage(
           Alias.a,
           child: Builder(
             builder: (context) {
-              seen.add(Elixir.stackOf(context).length);
+              seen.add(Alembic.stackOf(context).length);
               return const SizedBox();
             },
           ),
         ),
       ]);
-      await pumpApp(tester, Elixir(controller: controller));
+      await pumpApp(tester, Alembic(controller: controller));
 
       controller.push(b);
       await tester.pumpAndSettle();
@@ -328,7 +328,7 @@ void main() {
 
     testWidgets('W19: Navigator.pop(context, result) completes pushForResult', (tester) async {
       final controller = controllerOf([a]);
-      await pumpApp(tester, Elixir(controller: controller));
+      await pumpApp(tester, Alembic(controller: controller));
       final result = controller.pushForResult<String>(b);
       await tester.pumpAndSettle();
 
@@ -339,14 +339,14 @@ void main() {
       expect(aliases(controller), [Alias.a]);
     });
 
-    testWidgets('context.elixir is the controller of the closest Elixir', (tester) async {
+    testWidgets('context.alembic is the controller of the closest Alembic', (tester) async {
       final (outer, inner) = await _pumpNested(tester);
 
-      expect(tester.element(find.text('a', skipOffstage: false)).elixir, same(outer));
-      expect(tester.element(find.text('c')).elixir, same(inner));
+      expect(tester.element(find.text('a', skipOffstage: false)).alembic, same(outer));
+      expect(tester.element(find.text('c')).alembic, same(inner));
     });
 
-    testWidgets('Elixir.treeView and treeLine draw the nested Elixirs under their pages', (tester) async {
+    testWidgets('Alembic.treeView and treeLine draw the nested Alembics under their pages', (tester) async {
       final left = controllerOf([d], name: Alias.login);
       final right = controllerOf([e], name: Alias.dialog);
       final outer = controllerOf(name: Alias.a, [
@@ -354,24 +354,24 @@ void main() {
           Alias.b,
           child: Row(
             children: [
-              Expanded(child: Elixir(controller: left)),
-              Expanded(child: Elixir(controller: right)),
+              Expanded(child: Alembic(controller: left)),
+              Expanded(child: Alembic(controller: right)),
             ],
           ),
         ),
         TestPage(
           Alias.scope,
-          child: Elixir(
+          child: Alembic(
             controller: controllerOf([
               const TestPage(Alias.c, arguments: {'id': 1, 'data': 'foo'}),
             ]),
           ),
         ),
       ]);
-      await pumpApp(tester, Elixir(controller: outer));
+      await pumpApp(tester, Alembic(controller: outer));
 
       expect(
-        Elixir.treeView,
+        Alembic.treeView,
         // Green: the top pages on screen. d and e are not, they are under the covered b.
         [
           'a',
@@ -384,23 +384,23 @@ void main() {
           '   └─ \x1B[32mc {"id": 1, "data": "foo"}\x1B[0m',
         ].join('\n'),
       );
-      expect(Elixir.treeLine, 'a(b(login(d), dialog(e)), scope(c {"id": 1, "data": "foo"}))');
+      expect(Alembic.treeLine, 'a(b(login(d), dialog(e)), scope(c {"id": 1, "data": "foo"}))');
     });
   });
 
   group('W24: notifications', () {
-    testWidgets('bubble from the nested Elixirs to a listener above the root', (tester) async {
+    testWidgets('bubble from the nested Alembics to a listener above the root', (tester) async {
       final seen = <String>[];
       final inner = controllerOf([b, c], name: Alias.scope);
-      final outer = controllerOf([a, TestPage(Alias.scope, child: Elixir(controller: inner))], name: Alias.a);
+      final outer = controllerOf([a, TestPage(Alias.scope, child: Alembic(controller: inner))], name: Alias.a);
       await pumpApp(
         tester,
-        NotificationListener<ElixirNotification>(
+        NotificationListener<AlembicNotification>(
           onNotification: (n) {
             seen.add('${n.controller.name?.alias}: +${n.added.join(',')} -${n.removed.join(',')}');
             return false;
           },
-          child: Elixir(controller: outer),
+          child: Alembic(controller: outer),
         ),
       );
 
@@ -416,9 +416,9 @@ void main() {
       final controller = controllerOf([a]);
       await pumpApp(
         tester,
-        NotificationListener<ElixirNotification>(
+        NotificationListener<AlembicNotification>(
           onNotification: (_) => throw StateError('broken'),
-          child: Elixir(controller: controller),
+          child: Alembic(controller: controller),
         ),
       );
 
@@ -429,8 +429,8 @@ void main() {
       expect(find.text('b'), findsOneWidget);
     });
 
-    testWidgets('Elixir.listener hears its own Elixir and the nested ones', (tester) async {
-      String describe(ElixirNotification n) => '${n.controller.name?.alias}: ${n.next.join(' > ')}';
+    testWidgets('Alembic.listener hears its own Alembic and the nested ones', (tester) async {
+      String describe(AlembicNotification n) => '${n.controller.name?.alias}: ${n.next.join(' > ')}';
       final outerSeen = <String>[];
       final innerSeen = <String>[];
       final inner = controllerOf([b, c], name: Alias.scope);
@@ -438,10 +438,10 @@ void main() {
         a,
         TestPage(
           Alias.scope,
-          child: Elixir(controller: inner, listener: (n) => innerSeen.add(describe(n))),
+          child: Alembic(controller: inner, listener: (n) => innerSeen.add(describe(n))),
         ),
       ], name: Alias.a);
-      await pumpApp(tester, Elixir(controller: outer, listener: (n) => outerSeen.add(describe(n))));
+      await pumpApp(tester, Alembic(controller: outer, listener: (n) => outerSeen.add(describe(n))));
 
       inner.pop();
       await tester.pumpAndSettle();
@@ -452,18 +452,18 @@ void main() {
       expect(innerSeen, ['scope: b']);
     });
 
-    testWidgets('a throwing Elixir.listener is reported and the change still bubbles up', (tester) async {
+    testWidgets('a throwing Alembic.listener is reported and the change still bubbles up', (tester) async {
       final seen = <String>[];
       final inner = controllerOf([b, c], name: Alias.scope);
-      final outer = controllerOf([a, TestPage(Alias.scope, child: Elixir(controller: inner))]);
+      final outer = controllerOf([a, TestPage(Alias.scope, child: Alembic(controller: inner))]);
       await pumpApp(
         tester,
-        NotificationListener<ElixirNotification>(
+        NotificationListener<AlembicNotification>(
           onNotification: (n) {
             seen.add('${n.controller.name?.alias}');
             return false;
           },
-          child: Elixir(controller: outer, listener: (_) => throw StateError('broken')),
+          child: Alembic(controller: outer, listener: (_) => throw StateError('broken')),
         ),
       );
 
@@ -471,7 +471,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isA<StateError>());
-      expect(seen, ['scope'], reason: 'the notification passed the throwing listener of the outer Elixir');
+      expect(seen, ['scope'], reason: 'the notification passed the throwing listener of the outer Alembic');
     });
   });
 }
@@ -479,7 +479,7 @@ void main() {
 class _PushOnInit extends StatefulWidget {
   const _PushOnInit(this.page);
 
-  final ElixirPage page;
+  final AlembicPage page;
 
   @override
   State<_PushOnInit> createState() => _PushOnInitState();
@@ -489,7 +489,7 @@ class _PushOnInitState extends State<_PushOnInit> {
   @override
   void initState() {
     super.initState();
-    context.elixir.push(widget.page);
+    context.alembic.push(widget.page);
   }
 
   @override

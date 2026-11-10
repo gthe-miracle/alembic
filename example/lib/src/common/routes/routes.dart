@@ -1,4 +1,4 @@
-import 'package:elixir/elixir.dart';
+import 'package:alembic/alembic.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../feature/home/home_screen.dart';
@@ -9,8 +9,8 @@ import '../../feature/settings/settings_scope.dart';
 import '../../feature/settings/settings_screen.dart';
 import 'custom_route_transitions.dart';
 
-/// The pages of the root Elixir; `app` names the root Elixir itself.
-enum AppRoutes implements ElixirAlias {
+/// The pages of the root Alembic; `app` names the root Alembic itself.
+enum AppRoutes implements AlembicAlias {
   app('app'),
   home('home'),
   settings('settings_scope');
@@ -21,8 +21,8 @@ enum AppRoutes implements ElixirAlias {
   final String alias;
 }
 
-/// The pages of the settings Elixir, nested in [SettingsScopePage].
-enum Settings implements ElixirAlias {
+/// The pages of the settings Alembic, nested in [SettingsScopePage].
+enum Settings implements AlembicAlias {
   settings('settings'),
   dialog('settings_dialog'),
   about('about'),
@@ -52,7 +52,7 @@ final class AppPageRoute extends PageRoute<Object?> with CupertinoRouteTransitio
 
 /// The base of every page: Cupertino transitions with the swipe-back gesture on every platform, page-based.
 @immutable
-sealed class AppPage extends ElixirPage {
+sealed class AppPage extends AlembicPage {
   const AppPage({required super.child, super.arguments, super.key});
 
   @override
@@ -63,7 +63,7 @@ final class HomePage extends AppPage {
   const HomePage() : super(child: const HomeScreen());
 
   @override
-  ElixirAlias get alias => AppRoutes.home;
+  AlembicAlias get alias => AppRoutes.home;
 }
 
 final class SettingsScopePage extends AppPage {
@@ -76,7 +76,7 @@ final class SettingsScopePage extends AppPage {
   final String data;
 
   @override
-  ElixirAlias get alias => AppRoutes.settings;
+  AlembicAlias get alias => AppRoutes.settings;
 }
 
 final class SettingsPage extends AppPage {
@@ -92,40 +92,40 @@ final class SettingsPage extends AppPage {
   Route<Object?> createRoute(BuildContext context) => CustomMaterialRoute(page: this);
 
   @override
-  ElixirAlias get alias => Settings.settings;
+  AlembicAlias get alias => Settings.settings;
 }
 
 final class SettingsDetailPage extends AppPage {
   const SettingsDetailPage() : super(child: const SettingsScreenDetail());
 
   @override
-  ElixirAlias get alias => Settings.detail;
+  AlembicAlias get alias => Settings.detail;
 }
 
 /// Opened with `pushForResult<bool>`: the dialog pops `true` or `false`.
-final class SettingsDialogPage extends AppPage with ElixirDialogPage {
+final class SettingsDialogPage extends AppPage with AlembicDialogPage {
   const SettingsDialogPage() : super(child: const SettingsDialog());
 
   @override
-  ElixirAlias get alias => Settings.dialog;
+  AlembicAlias get alias => Settings.dialog;
 }
 
-final class AboutSheetPage extends AppPage with ElixirSheetPage {
+final class AboutSheetPage extends AppPage with AlembicSheetPage {
   const AboutSheetPage() : super(child: const AboutSheet());
 
   @override
-  ElixirAlias get alias => Settings.about;
+  AlembicAlias get alias => Settings.about;
 
   // The keyboard padding makes the sheet taller than the default 9/16 of the screen.
   @override
   bool get isScrollControlled => true;
 }
 
-final class DraggableSheetPage extends AppPage with ElixirSheetPage {
+final class DraggableSheetPage extends AppPage with AlembicSheetPage {
   const DraggableSheetPage() : super(child: const DraggableSheet());
 
   @override
-  ElixirAlias get alias => Settings.draggable;
+  AlembicAlias get alias => Settings.draggable;
 
   // A DraggableScrollableSheet sizes itself as a fraction of the full height.
   @override

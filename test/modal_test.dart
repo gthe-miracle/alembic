@@ -1,4 +1,4 @@
-import 'package:elixir/elixir.dart';
+import 'package:alembic/alembic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -11,9 +11,9 @@ const sheet = SheetTestPage(
   child: SizedBox(height: 300, width: double.infinity, child: Text('sheet')),
 );
 
-Future<ElixirController> _pump(WidgetTester tester) async {
+Future<AlembicController> _pump(WidgetTester tester) async {
   final controller = controllerOf([a], guards: [const ModalGuard()]);
-  await pumpApp(tester, Elixir(controller: controller));
+  await pumpApp(tester, Alembic(controller: controller));
   return controller;
 }
 

@@ -9,34 +9,34 @@ import 'controller.dart';
 import 'page.dart';
 
 /// Handles the system back button instead of `navigator.maybePop()`; returns whether the press was handled.
-typedef ElixirBackHandler = Future<bool> Function(NavigatorState navigator);
+typedef AlembicBackHandler = Future<bool> Function(NavigatorState navigator);
 
-/// Called with a change of an Elixir or of an Elixir nested inside it, see [Elixir.listener].
-typedef ElixirListener = void Function(ElixirNotification notification);
+/// Called with a change of an Alembic or of an Alembic nested inside it, see [Alembic.listener].
+typedef AlembicListener = void Function(AlembicNotification notification);
 
-/// {@template elixir}
-/// Renders an [ElixirController] with a [Navigator].
+/// {@template alembic}
+/// Renders an [AlembicController] with a [Navigator].
 ///
 /// The widget is a thin adapter: it shows the pages of the controller, reports the pages the user closed (a swipe, a
 /// barrier tap, `Navigator.pop(context, result)`) back with `controller.remove`, and handles the system back button.
 /// ```dart
-/// MaterialApp(builder: (context, _) => Elixir(controller: controller));
+/// MaterialApp(builder: (context, _) => Alembic(controller: controller));
 /// ```
 ///
-/// Every committed change is dispatched as an [ElixirNotification], which bubbles up through the outer Elixirs: one
-/// [NotificationListener] above the root Elixir hears every navigator of the app.
+/// Every committed change is dispatched as an [AlembicNotification], which bubbles up through the outer Alembics: one
+/// [NotificationListener] above the root Alembic hears every navigator of the app.
 ///
-/// The back button goes to the visible nested Elixirs first, the newest first, then to [onBackButtonPressed], by
+/// The back button goes to the visible nested Alembics first, the newest first, then to [onBackButtonPressed], by
 /// default `navigator.maybePop()`. So a dialog or a sheet on top closes first, `PopScope` is respected, and the last
-/// page lets the platform close the app. A nested Elixir is visible while its route is current and it is not hidden
+/// page lets the platform close the app. A nested Alembic is visible while its route is current and it is not hidden
 /// by a [Visibility], e.g. an inactive tab of an [IndexedStack].
 ///
-/// While a visible nested Elixir can pop, it blocks the route hosting it, so the swipe-back of that route never closes
+/// While a visible nested Alembic can pop, it blocks the route hosting it, so the swipe-back of that route never closes
 /// the route with an open sheet or with pages stacked inside it.
 /// {@endtemplate}
-class Elixir extends StatefulWidget {
-  /// {@macro elixir}
-  const Elixir({
+class Alembic extends StatefulWidget {
+  /// {@macro alembic}
+  const Alembic({
     required this.controller,
     this.listener,
     this.observers = const <NavigatorObserver>[],
@@ -48,17 +48,17 @@ class Elixir extends StatefulWidget {
   });
 
   /// The owner of the pages.
-  final ElixirController controller;
+  final AlembicController controller;
 
-  /// Called after every change of this Elixir and of every Elixir nested inside it; `controller.name` tells them
+  /// Called after every change of this Alembic and of every Alembic nested inside it; `controller.name` tells them
   /// apart. The notification keeps bubbling up whatever this does, and an error it throws is reported.
   /// ```dart
-  /// Elixir(
+  /// Alembic(
   ///   controller: controller,
   ///   listener: (n) => log('${n.controller.name?.alias}: ${n.next.join(' > ')}'),
   /// );
   /// ```
-  final ElixirListener? listener;
+  final AlembicListener? listener;
 
   /// Observers of the underlying [Navigator].
   final List<NavigatorObserver> observers;
@@ -68,7 +68,7 @@ class Elixir extends StatefulWidget {
 
   /// Replaces the default reaction to the back button, `navigator.maybePop()`.
   ///
-  /// Called only when the press reaches this Elixir: no visible nested Elixir has handled it. A nested Elixir given
+  /// Called only when the press reaches this Alembic: no visible nested Alembic has handled it. A nested Alembic given
   /// this may decline the press, so it does not block the swipe-back of the route hosting it.
   /// ```dart
   /// onBackButtonPressed: (navigator) async {
@@ -79,7 +79,7 @@ class Elixir extends StatefulWidget {
   ///   return navigator.maybePop();
   /// },
   /// ```
-  final ElixirBackHandler? onBackButtonPressed;
+  final AlembicBackHandler? onBackButtonPressed;
 
   /// Restores the state of the navigator when given, see [Navigator.restorationScopeId].
   final String? restorationScopeId;
@@ -87,48 +87,48 @@ class Elixir extends StatefulWidget {
   /// Whether the navigator reports the route changes to the engine, e.g. to the browser address bar.
   final bool reportsRouteUpdateToEngine;
 
-  /// The controller of the closest Elixir above [context], if any.
-  static ElixirController? maybeOf(BuildContext context) =>
-      context.getInheritedWidgetOfExactType<_ElixirScope>()?.state.widget.controller;
+  /// The controller of the closest Alembic above [context], if any.
+  static AlembicController? maybeOf(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<_AlembicScope>()?.state.widget.controller;
 
-  /// The controller of the closest Elixir above [context].
-  static ElixirController of(BuildContext context) => maybeOf(context) ?? _notFound();
+  /// The controller of the closest Alembic above [context].
+  static AlembicController of(BuildContext context) => maybeOf(context) ?? _notFound();
 
-  /// The pages of the closest Elixir above [context]; the widget is rebuilt when they change.
-  static ElixirNavigationState stackOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<_ElixirScope>()?.pages ?? _notFound();
+  /// The pages of the closest Alembic above [context]; the widget is rebuilt when they change.
+  static AlembicNavigationState stackOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_AlembicScope>()?.pages ?? _notFound();
 
-  /// The pages of every root Elixir and of the Elixirs nested in them, as a tree for debug logs:
+  /// The pages of every root Alembic and of the Alembics nested in them, as a tree for debug logs:
   /// ```text
   /// app
   /// ├─ home
   /// └─ settings
   ///    └─ profile {"id": 1, "data": "foo"}
   /// ```
-  /// A page shows its name and its [ElixirPage.arguments] as JSON. The active pages, the ones on screen, are green with
-  /// ANSI escape codes, which a console without colors prints as they are. A page hosting several Elixirs, e.g. tabs,
-  /// lists them under their `controller.name`. Only the mounted Elixirs are shown: called from a [listener], the Elixir
+  /// A page shows its name and its [AlembicPage.arguments] as JSON. The active pages, the ones on screen, are green with
+  /// ANSI escape codes, which a console without colors prints as they are. A page hosting several Alembics, e.g. tabs,
+  /// lists them under their `controller.name`. Only the mounted Alembics are shown: called from a [listener], the Alembic
   /// nested in a page that was just pushed appears after the frame.
-  static String get treeView => _ElixirState._roots.map((root) => root._treeView).join('\n');
+  static String get treeView => _AlembicState._roots.map((root) => root._treeView).join('\n');
 
   /// [treeView] on one line for analytics, without colors: `app(home, settings(profile {"id": 1, "data": "foo"}))`.
-  /// A page hosting several Elixirs lists them by `controller.name`: `tabs(feed(post), profile(me))`.
+  /// A page hosting several Alembics lists them by `controller.name`: `tabs(feed(post), profile(me))`.
   ///
-  /// Read it after the frame, so the Elixir nested in a page that was just pushed is already there:
+  /// Read it after the frame, so the Alembic nested in a page that was just pushed is already there:
   /// ```dart
-  /// listener: (_) => WidgetsBinding.instance.addPostFrameCallback((_) => analytics.log(Elixir.treeLine)),
+  /// listener: (_) => WidgetsBinding.instance.addPostFrameCallback((_) => analytics.log(Alembic.treeLine)),
   /// ```
-  static String get treeLine => _ElixirState._roots.map((root) => root._treeLine).join(', ');
+  static String get treeLine => _AlembicState._roots.map((root) => root._treeLine).join(', ');
 
-  static Never _notFound() => throw FlutterError('No Elixir found above this context.');
+  static Never _notFound() => throw FlutterError('No Alembic found above this context.');
 
   @override
-  State<Elixir> createState() => _ElixirState();
+  State<Alembic> createState() => _AlembicState();
 }
 
-class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
-  /// The Elixirs that take the back button from the binding: they are not nested into another Elixir.
-  static final Set<_ElixirState> _roots = <_ElixirState>{};
+class _AlembicState extends State<Alembic> with WidgetsBindingObserver {
+  /// The Alembics that take the back button from the binding: they are not nested into another Alembic.
+  static final Set<_AlembicState> _roots = <_AlembicState>{};
 
   late final _Tracker _tracker = _Tracker((key, result) => _popped[key] = result);
 
@@ -136,22 +136,22 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
   final Map<LocalKey, Object?> _popped = <LocalKey, Object?>{};
 
   late List<NavigatorObserver> _observers;
-  late ElixirNavigationState _last;
+  late AlembicNavigationState _last;
 
-  _ElixirState? _parent;
+  _AlembicState? _parent;
 
-  /// The nested Elixirs, in the order they were mounted.
-  final List<_ElixirState> _children = <_ElixirState>[];
+  /// The nested Alembics, in the order they were mounted.
+  final List<_AlembicState> _children = <_AlembicState>[];
 
-  /// The navigator a root Elixir is shown in, e.g. the one of a `MaterialApp`.
+  /// The navigator a root Alembic is shown in, e.g. the one of a `MaterialApp`.
   NavigatorState? _host;
 
-  /// The route of the outer navigator this Elixir is shown in.
+  /// The route of the outer navigator this Alembic is shown in.
   ModalRoute<Object?>? _route;
   bool _shown = true;
   bool _reportScheduled = false;
 
-  /// Whether this nested Elixir blocks [_route]: the swipe of a route knows nothing about the navigator inside it.
+  /// Whether this nested Alembic blocks [_route]: the swipe of a route knows nothing about the navigator inside it.
   bool _holdsRoute = false;
 
   /* #region Lifecycle */
@@ -174,7 +174,7 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
   }
 
   @override
-  void didUpdateWidget(covariant Elixir oldWidget) {
+  void didUpdateWidget(covariant Alembic oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!identical(widget.observers, oldWidget.observers)) {
       _observers = <NavigatorObserver>[_tracker, ...widget.observers];
@@ -199,9 +199,9 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
   void deactivate() {
     final parent = _parent;
     _unregister();
-    // The Elixirs left behind may be the ones handling the back button now.
+    // The Alembics left behind may be the ones handling the back button now.
     (parent ?? _roots.firstOrNull)?._reportBackButton();
-    if (parent == null && _roots.isEmpty) _reportNoElixirLeft();
+    if (parent == null && _roots.isEmpty) _reportNoAlembicLeft();
     super.deactivate();
   }
 
@@ -217,24 +217,24 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
     final next = _last = widget.controller.state;
     if (!mounted || identical(previous, next)) return;
     setState(() {});
-    final notification = ElixirNotification(widget.controller, previous, next);
+    final notification = AlembicNotification(widget.controller, previous, next);
     // The notification bubbles up from here, so the NotificationListener built below never sees it: call the listener.
     _callListener(notification);
     try {
       notification.dispatch(context);
     } on Object catch (error, stackTrace) {
-      _report(error, stackTrace, 'dispatching an ElixirNotification');
+      _report(error, stackTrace, 'dispatching an AlembicNotification');
     }
   }
 
-  /// The changes of the nested Elixirs, on their way up.
-  bool _handleNestedChange(ElixirNotification notification) {
+  /// The changes of the nested Alembics, on their way up.
+  bool _handleNestedChange(AlembicNotification notification) {
     _callListener(notification);
     return false;
   }
 
   /// A throwing listener would stop the notification on its way up.
-  void _callListener(ElixirNotification notification) {
+  void _callListener(AlembicNotification notification) {
     try {
       widget.listener?.call(notification);
     } on Object catch (error, stackTrace) {
@@ -246,21 +246,21 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
     FlutterErrorDetails(
       exception: error,
       stack: stackTrace,
-      library: 'elixir',
+      library: 'alembic',
       context: ErrorDescription('while $action of ${widget.controller}'),
     ),
   );
 
   /// Called by the [Navigator] for a page the user or the framework closed.
   void _handleDidRemovePage(Page<Object?> page) {
-    if (page is! ElixirPage) return;
+    if (page is! AlembicPage) return;
     final controller = widget.controller..remove(page, _popped.remove(page.key));
     // A guard has kept the page that the navigator already dropped: build it again.
     if (mounted && controller.state.any((other) => other.key == page.key)) setState(() {});
   }
 
   /* #region Tree view */
-  String get _label => widget.controller.name?.alias ?? 'elixir';
+  String get _label => widget.controller.name?.alias ?? 'alembic';
 
   String get _treeView {
     final out = StringBuffer(_label);
@@ -268,9 +268,9 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
     return '$out';
   }
 
-  /// Writes the pages, one per line after [indent], each with the Elixirs nested in it. The active page, the top one
-  /// of an Elixir that is [shown] and [_visible], is green.
-  // An Elixir in a route that is not one of the pages, e.g. a `showDialog`, is left out.
+  /// Writes the pages, one per line after [indent], each with the Alembics nested in it. The active page, the top one
+  /// of an Alembic that is [shown] and [_visible], is green.
+  // An Alembic in a route that is not one of the pages, e.g. a `showDialog`, is left out.
   void _writeTree(StringBuffer out, String indent, {required bool shown}) {
     final pages = widget.controller.state;
     for (final (index, page) in pages.indexed) {
@@ -282,7 +282,7 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
       if (nested case [final child]) {
         child._writeTree(out, next, shown: active);
       } else {
-        // Several Elixirs in one page, e.g. tabs: name each one.
+        // Several Alembics in one page, e.g. tabs: name each one.
         for (final (index, child) in nested.indexed) {
           child._writeTree(out, _writeNode(out, next, child._label, last: index == nested.length - 1), shown: active);
         }
@@ -292,7 +292,7 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
 
   /// The name with the arguments as JSON, `profile {"id": 1, "data": "foo"}`; a value JSON has no form for is written
   /// with its `toString`.
-  static String _pageLabel(ElixirPage page) {
+  static String _pageLabel(AlembicPage page) {
     if (page.arguments.isEmpty) return page.name;
     final entries = page.arguments.entries.map(
       (entry) => '${jsonEncode(entry.key)}: ${jsonEncode(entry.value, toEncodable: (value) => '$value')}',
@@ -308,7 +308,7 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
 
   String get _treeLine => '$_label(${_pagesLine()})';
 
-  /// The pages, each with the Elixirs nested in it in parentheses.
+  /// The pages, each with the Alembics nested in it in parentheses.
   String _pagesLine() => widget.controller.state
       .map(
         (page) => switch (_nestedIn(page)) {
@@ -319,16 +319,16 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
       )
       .join(', ');
 
-  /// The Elixirs nested in [page], in the order they were mounted.
-  List<_ElixirState> _nestedIn(ElixirPage page) => [
+  /// The Alembics nested in [page], in the order they were mounted.
+  List<_AlembicState> _nestedIn(AlembicPage page) => [
     for (final child in _children)
-      if (child._route?.settings case ElixirPage(:final key) when key == page.key) child,
+      if (child._route?.settings case AlembicPage(:final key) when key == page.key) child,
   ];
   /* #endregion */
 
   /* #region Back button */
   void _register() {
-    if (context.getInheritedWidgetOfExactType<_ElixirScope>()?.state case final parent?) {
+    if (context.getInheritedWidgetOfExactType<_AlembicScope>()?.state case final parent?) {
       _parent = parent.._children.add(this);
     } else {
       _host = Navigator.maybeOf(context);
@@ -363,7 +363,7 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
 
   static Future<bool> _maybePop(NavigatorState navigator) => navigator.maybePop();
 
-  /// Whether a press reaching this Elixir would be handled, decided the way [_handleBackButton] does it.
+  /// Whether a press reaching this Alembic would be handled, decided the way [_handleBackButton] does it.
   bool get _canHandlePop {
     if (!_visible) return false;
     if (_children.any((child) => child._canHandlePop) || widget.onBackButtonPressed != null) return true;
@@ -389,13 +389,13 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
       ..addPostFrameCallback((_) {
         _reportScheduled = false;
         _dispatchBackButton();
-      }, debugLabel: 'Elixir.reportBackButton')
+      }, debugLabel: 'Alembic.reportBackButton')
       ..ensureVisualUpdate();
   }
 
   void _dispatchBackButton() {
     if (!mounted) return;
-    // Only a nested Elixir: the navigator of a root one would swallow the press before the root gets it.
+    // Only a nested Alembic: the navigator of a root one would swallow the press before the root gets it.
     final holdsRoute = _parent != null && widget.onBackButtonPressed == null && _canHandlePop;
     if (holdsRoute != _holdsRoute) setState(() => _holdsRoute = holdsRoute);
     if (_parent case final parent?) return parent._dispatchBackButton();
@@ -404,28 +404,28 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
     NavigationNotification(canHandlePop: _roots.any((root) => root._canHandlePop)).dispatch(context);
   }
 
-  /// A pop of the route this Elixir blocks, e.g. the `BackButton` of an `AppBar` above it.
-  // Two visible nested Elixirs in one route both pop here; an outer `maybePop` is the only way to get here.
+  /// A pop of the route this Alembic blocks, e.g. the `BackButton` of an `AppBar` above it.
+  // Two visible nested Alembics in one route both pop here; an outer `maybePop` is the only way to get here.
   void _handleRoutePopBlocked(bool didPop, Object? result) {
     if (!didPop && _holdsRoute) unawaited(_handleBackButton());
   }
 
-  /// Withdraws the claim of the last root Elixir, which nothing else would replace.
-  void _reportNoElixirLeft() {
+  /// Withdraws the claim of the last root Alembic, which nothing else would replace.
+  void _reportNoAlembicLeft() {
     final host = _host;
     if (host == null) return;
     SchedulerBinding.instance.addPostFrameCallback((_) {
       if (_roots.isEmpty && host.mounted) NavigationNotification(canHandlePop: host.canPop()).dispatch(host.context);
-    }, debugLabel: 'Elixir.reportNoElixirLeft');
+    }, debugLabel: 'Alembic.reportNoAlembicLeft');
   }
   /* #endregion */
 
   @override
-  Widget build(BuildContext context) => _ElixirScope(
+  Widget build(BuildContext context) => _AlembicScope(
     state: this,
     pages: widget.controller.state,
     // Always in the tree, even without a listener: adding one later would remount the navigator.
-    child: NotificationListener<ElixirNotification>(
+    child: NotificationListener<AlembicNotification>(
       onNotification: _handleNestedChange,
       child: NotificationListener<NavigationNotification>(
         onNotification: _handleNavigationNotification,
@@ -447,54 +447,54 @@ class _ElixirState extends State<Elixir> with WidgetsBindingObserver {
   );
 }
 
-/// Links an Elixir with its controller below and with the nested Elixirs.
-class _ElixirScope extends InheritedWidget {
-  const _ElixirScope({required this.state, required this.pages, required super.child});
+/// Links an Alembic with its controller below and with the nested Alembics.
+class _AlembicScope extends InheritedWidget {
+  const _AlembicScope({required this.state, required this.pages, required super.child});
 
-  final _ElixirState state;
+  final _AlembicState state;
 
-  /// The pages this Elixir was built with.
-  final ElixirNavigationState pages;
+  /// The pages this Alembic was built with.
+  final AlembicNavigationState pages;
 
   @override
-  bool updateShouldNotify(covariant _ElixirScope oldWidget) => !identical(oldWidget.pages, pages);
+  bool updateShouldNotify(covariant _AlembicScope oldWidget) => !identical(oldWidget.pages, pages);
 }
 
-/// {@template elixir_notification}
-/// A change committed by the controller of an [Elixir], bubbling up through the widget tree.
+/// {@template alembic_notification}
+/// A change committed by the controller of an [Alembic], bubbling up through the widget tree.
 ///
 /// ```dart
-/// NotificationListener<ElixirNotification>(
+/// NotificationListener<AlembicNotification>(
 ///   onNotification: (notification) {
 ///     log('${notification.controller.name}: ${notification.next}');
 ///     return false; // let it reach the listeners above
 ///   },
-///   child: Elixir(controller: controller),
+///   child: Alembic(controller: controller),
 /// );
 /// ```
 ///
 /// A change committed during a build is dispatched after the frame, merged with the following ones of that frame.
 /// {@endtemplate}
-final class ElixirNotification extends Notification {
-  /// {@macro elixir_notification}
-  const ElixirNotification(this.controller, this.previous, this.next);
+final class AlembicNotification extends Notification {
+  /// {@macro alembic_notification}
+  const AlembicNotification(this.controller, this.previous, this.next);
 
-  /// The controller that committed the change; `controller.name` tells the Elixirs apart.
-  final ElixirController controller;
+  /// The controller that committed the change; `controller.name` tells the Alembics apart.
+  final AlembicController controller;
 
   /// The pages before the change.
-  final ElixirNavigationState previous;
+  final AlembicNavigationState previous;
 
   /// The pages after the change.
-  final ElixirNavigationState next;
+  final AlembicNavigationState next;
 
   /// The pages whose keys are new.
-  ElixirNavigationState get added => _without(next, previous);
+  AlembicNavigationState get added => _without(next, previous);
 
   /// The pages whose keys are gone.
-  ElixirNavigationState get removed => _without(previous, next);
+  AlembicNavigationState get removed => _without(previous, next);
 
-  static ElixirNavigationState _without(ElixirNavigationState pages, ElixirNavigationState other) {
+  static AlembicNavigationState _without(AlembicNavigationState pages, AlembicNavigationState other) {
     final keys = {for (final page in other) page.key};
     return [
       for (final page in pages)
@@ -530,7 +530,7 @@ class _Tracker extends NavigatorObserver {
   }
 
   void _track(Route<Object?> route) {
-    if (route case ModalRoute<Object?>(settings: ElixirPage(:final key))) {
+    if (route case ModalRoute<Object?>(settings: AlembicPage(:final key))) {
       route.registerPopEntry(_PopResult(key, _onPop));
     }
   }

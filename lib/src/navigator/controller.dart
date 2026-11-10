@@ -13,12 +13,12 @@ import 'page.dart';
 /// controller.change((state) => [...state, const SettingsPage()]);
 /// controller.change((state) => state..removeLast());
 /// ```
-typedef ElixirChange = ElixirNavigationState Function(ElixirNavigationState state);
+typedef AlembicChange = AlembicNavigationState Function(AlembicNavigationState state);
 
 /// A queued change, with the results of the pages it removes.
-typedef _Command = (ElixirNavigationState, Map<LocalKey, Object?>) Function(ElixirNavigationState state);
+typedef _Command = (AlembicNavigationState, Map<LocalKey, Object?>) Function(AlembicNavigationState state);
 
-/// {@template elixir_controller}
+/// {@template alembic_controller}
 /// The owner of the navigation state.
 ///
 /// Every change goes through one pipeline: the change, then dedupe by key (the last page wins), then the [guards],
@@ -27,66 +27,66 @@ typedef _Command = (ElixirNavigationState, Map<LocalKey, Object?>) Function(Elix
 ///
 /// A change requested while another one is committed, e.g. from a listener, is queued and applied after it, in order.
 ///
-/// The controller knows no widgets, so it can be created, changed and tested without any. Render it with `Elixir`.
+/// The controller knows no widgets, so it can be created, changed and tested without any. Render it with `Alembic`.
 /// ```dart
-/// final controller = ElixirController(
+/// final controller = AlembicController(
 ///   [const HomePage()],
 ///   guards: [const RootGuard(HomePage())],
 ///   name: Routes.app,
 /// );
 /// ```
 /// {@endtemplate}
-final class ElixirController extends ChangeNotifier implements ValueListenable<ElixirNavigationState> {
-  /// {@macro elixir_controller}
+final class AlembicController extends ChangeNotifier implements ValueListenable<AlembicNavigationState> {
+  /// {@macro alembic_controller}
   ///
   /// The [initial] state is validated by the [guards] right away, so the first frame is already consistent. Throws
   /// an [ArgumentError] when nothing is left of it. [revalidate] re-runs the guards whenever it notifies.
-  ElixirController(
-    ElixirNavigationState initial, {
-    List<ElixirGuard> guards = const <ElixirGuard>[],
+  AlembicController(
+    AlembicNavigationState initial, {
+    List<AlembicGuard> guards = const <AlembicGuard>[],
     Listenable? revalidate,
     this.name,
-  }) : guards = List<ElixirGuard>.unmodifiable(guards),
-       _initial = List<ElixirPage>.unmodifiable(initial),
+  }) : guards = List<AlembicGuard>.unmodifiable(guards),
+       _initial = List<AlembicPage>.unmodifiable(initial),
        _revalidate = revalidate {
-    final state = _validate(const <ElixirPage>[], List<ElixirPage>.of(initial));
+    final state = _validate(const <AlembicPage>[], List<AlembicPage>.of(initial));
     if (state.isEmpty) throw ArgumentError.value(initial, 'initial', 'Nothing is left of the initial state');
-    _state = UnmodifiableListView<ElixirPage>(state);
+    _state = UnmodifiableListView<AlembicPage>(state);
     revalidate?.addListener(this.revalidate);
   }
 
   /// The most changes committed at once: a listener changing the state on every change is stopped there.
   static const int _maxCommands = 64;
 
-  /// Tells controllers apart, e.g. in an `ElixirNotification`.
-  final ElixirAlias? name;
+  /// Tells controllers apart, e.g. in an `AlembicNotification`.
+  final AlembicAlias? name;
 
   /// The rules applied to every change, in order: each guard receives the result of the previous one.
-  final List<ElixirGuard> guards;
+  final List<AlembicGuard> guards;
 
-  final ElixirNavigationState _initial;
+  final AlembicNavigationState _initial;
   final Listenable? _revalidate;
   final Queue<_Command> _queue = Queue<_Command>();
 
   /// The futures of [pushForResult], by page key.
   final Map<LocalKey, Completer<Object?>> _waiting = <LocalKey, Completer<Object?>>{};
 
-  ElixirNavigationState _state = const <ElixirPage>[];
+  AlembicNavigationState _state = const <AlembicPage>[];
   bool _draining = false;
   bool _disposed = false;
   bool _notifyScheduled = false;
 
   /// The pages from the root to the visible one, unmodifiable.
-  ElixirNavigationState get state => _state;
+  AlembicNavigationState get state => _state;
 
   @override
-  ElixirNavigationState get value => _state;
+  AlembicNavigationState get value => _state;
 
   /// Rewrites the state with [fn]. Every other method is a shortcut for it.
-  void change(ElixirChange fn) => _run((state) => (fn(state), const <LocalKey, Object?>{}));
+  void change(AlembicChange fn) => _run((state) => (fn(state), const <LocalKey, Object?>{}));
 
   /// Adds [page] on top. A page with the same key that is already in the state moves to the top.
-  void push(ElixirPage page) => change((state) => state..add(page));
+  void push(AlembicPage page) => change((state) => state..add(page));
 
   /// Adds [page] on top and completes when it leaves the state.
   ///
@@ -95,7 +95,7 @@ final class ElixirController extends ChangeNotifier implements ValueListenable<E
   /// ```dart
   /// final confirmed = await controller.pushForResult<bool>(const ConfirmPage());
   /// ```
-  Future<T?> pushForResult<T extends Object?>(ElixirPage page) {
+  Future<T?> pushForResult<T extends Object?>(AlembicPage page) {
     _waiting.remove(page.key)?.complete();
     if (_disposed) return Future<T?>.value();
     final completer = _waiting[page.key] = Completer<Object?>();
@@ -114,22 +114,22 @@ final class ElixirController extends ChangeNotifier implements ValueListenable<E
   });
 
   /// Removes the page with the key of [page] and completes its [pushForResult] with [result].
-  void remove(ElixirPage page, [Object? result]) {
+  void remove(AlembicPage page, [Object? result]) {
     final key = page.key;
     _run((state) => (state..removeWhere((other) => other.key == key), {key: result}));
   }
 
   /// Removes the pages above the topmost page with [alias]. Does nothing when there is none.
-  void popUntil(ElixirAlias alias) => change((state) {
+  void popUntil(AlembicAlias alias) => change((state) {
     final index = state.lastIndexWhere((page) => page.alias == alias);
     return index < 0 ? state : state.sublist(0, index + 1);
   });
 
-  /// Removes the pages marked with [tag], see [ElixirPage.tags].
+  /// Removes the pages marked with [tag], see [AlembicPage.tags].
   void removeTag(String tag) => change((state) => state..removeWhere((page) => page.tags.contains(tag)));
 
   /// Returns to the initial state given to the constructor, validated by the guards again.
-  void reset() => change((_) => List<ElixirPage>.of(_initial));
+  void reset() => change((_) => List<AlembicPage>.of(_initial));
 
   /// Runs the guards on the current state again.
   void revalidate() => change((state) => state);
@@ -156,9 +156,9 @@ final class ElixirController extends ChangeNotifier implements ValueListenable<E
 
   void _commit(_Command command) {
     final previous = _state;
-    final (ElixirNavigationState, Map<LocalKey, Object?>) change;
+    final (AlembicNavigationState, Map<LocalKey, Object?>) change;
     try {
-      change = command(List<ElixirPage>.of(previous));
+      change = command(List<AlembicPage>.of(previous));
     } on Object catch (error, stackTrace) {
       return _report(error, 'changing the state', stackTrace);
     }
@@ -167,16 +167,16 @@ final class ElixirController extends ChangeNotifier implements ValueListenable<E
     if (_disposed) return;
     if (next.isEmpty) return _report(StateError('The navigation state cannot be empty'), 'committing $requested');
     if (listEquals(previous, next)) return;
-    _state = UnmodifiableListView<ElixirPage>(List<ElixirPage>.of(next));
+    _state = UnmodifiableListView<AlembicPage>(List<AlembicPage>.of(next));
     _complete(previous, results);
     _notify();
   }
 
-  ElixirNavigationState _validate(ElixirNavigationState from, ElixirNavigationState to) {
+  AlembicNavigationState _validate(AlembicNavigationState from, AlembicNavigationState to) {
     var next = _dedupe(to);
     for (final guard in guards) {
       try {
-        next = guard(from, List<ElixirPage>.of(next));
+        next = guard(from, List<AlembicPage>.of(next));
       } on Object catch (error, stackTrace) {
         _report(error, 'running $guard', stackTrace);
       }
@@ -185,14 +185,14 @@ final class ElixirController extends ChangeNotifier implements ValueListenable<E
   }
 
   /// Keeps the last page of every key, so pushing a page that is already in the state moves it to the top.
-  static ElixirNavigationState _dedupe(ElixirNavigationState state) {
+  static AlembicNavigationState _dedupe(AlembicNavigationState state) {
     final keys = <LocalKey>{};
     final unique = state.reversed.where((page) => keys.add(page.key)).toList().reversed.toList();
     return unique.length == state.length ? state : unique;
   }
 
   /// Completes the futures of the pages that have left the state with the results of the change.
-  void _complete(ElixirNavigationState previous, Map<LocalKey, Object?> results) {
+  void _complete(AlembicNavigationState previous, Map<LocalKey, Object?> results) {
     if (_waiting.isEmpty) return;
     final keys = {for (final page in _state) page.key};
     for (final page in previous) {
@@ -219,14 +219,14 @@ final class ElixirController extends ChangeNotifier implements ValueListenable<E
     SchedulerBinding.instance.addPostFrameCallback((_) {
       _notifyScheduled = false;
       if (!_disposed) notifyListeners();
-    }, debugLabel: 'ElixirController.notifyListeners');
+    }, debugLabel: 'AlembicController.notifyListeners');
   }
 
   void _report(Object error, String action, [StackTrace? stackTrace]) => FlutterError.reportError(
     FlutterErrorDetails(
       exception: error,
       stack: stackTrace ?? StackTrace.current,
-      library: 'elixir',
+      library: 'alembic',
       context: ErrorDescription('while $action in $this'),
     ),
   );
@@ -246,5 +246,5 @@ final class ElixirController extends ChangeNotifier implements ValueListenable<E
   }
 
   @override
-  String toString() => 'ElixirController(${name == null ? '' : '${name!.alias}: '}${_state.join(' > ')})';
+  String toString() => 'AlembicController(${name == null ? '' : '${name!.alias}: '}${_state.join(' > ')})';
 }

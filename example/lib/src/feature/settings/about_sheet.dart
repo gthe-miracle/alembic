@@ -26,7 +26,7 @@ class AboutSheet extends StatelessWidget {
                 const Text('About'),
                 const SizedBox(height: 8),
                 const TextField(),
-                const Text('A sheet page: an ElixirPage with ElixirSheetPage.'),
+                const Text('A sheet page: an AlembicPage with AlembicSheetPage.'),
                 const SizedBox(height: 8),
                 // Up to 240 high, and shorter when the keyboard needs the room.
                 Flexible(

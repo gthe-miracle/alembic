@@ -1,4 +1,4 @@
-import 'package:elixir/elixir.dart';
+import 'package:alembic/alembic.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/routes/routes.dart';
@@ -21,7 +21,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool? _result;
 
   Future<void> _openDialog() async {
-    final result = await context.elixir.pushForResult<bool>(const SettingsDialogPage());
+    final result = await context.alembic.pushForResult<bool>(const SettingsDialogPage());
     if (mounted) setState(() => _result = result);
   }
 
@@ -29,7 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: Colors.cyan,
     appBar: AppBar(
-      // The settings Elixir has a single page: leave it through the root one.
+      // The settings Alembic has a single page: leave it through the root one.
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: () => App.controllerOf(context).popUntil(AppRoutes.home),
@@ -44,13 +44,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text('data: ${widget.data}'),
             Text('Dialog result: $_result'),
             TextButton(onPressed: _openDialog, child: const Text('Open dialog')),
-            TextButton(onPressed: () => context.elixir.push(const AboutSheetPage()), child: const Text('Open sheet')),
+            TextButton(onPressed: () => context.alembic.push(const AboutSheetPage()), child: const Text('Open sheet')),
             TextButton(
-              onPressed: () => context.elixir.push(const DraggableSheetPage()),
+              onPressed: () => context.alembic.push(const DraggableSheetPage()),
               child: const Text('Open draggable sheet'),
             ),
             TextButton(
-              onPressed: () => context.elixir.push(const SettingsDetailPage()),
+              onPressed: () => context.alembic.push(const SettingsDetailPage()),
               child: const Text('Open detail page'),
             ),
           ],
@@ -70,8 +70,8 @@ class SettingsScreenDetail extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: Colors.cyan,
     appBar: AppBar(
-      // The settings Elixir has a single page: leave it through the root one.
-      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.elixir.pop()),
+      // The settings Alembic has a single page: leave it through the root one.
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.alembic.pop()),
       title: const Text('Settings'),
     ),
     body: SafeArea(

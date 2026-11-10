@@ -1,9 +1,9 @@
-import 'package:elixir/elixir.dart';
+import 'package:alembic/alembic.dart';
 import 'package:flutter/cupertino.dart' show CupertinoRouteTransitionMixin;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-enum Alias implements ElixirAlias {
+enum Alias implements AlembicAlias {
   a,
   b,
   c,
@@ -19,7 +19,7 @@ enum Alias implements ElixirAlias {
 }
 
 /// A page showing its name, unless it is given a child.
-base class TestPage extends ElixirPage {
+base class TestPage extends AlembicPage {
   const TestPage(this.alias, {Widget? child, super.arguments, super.key, this.tags = const <String>{}})
     : super(child: child ?? const _Name());
 
@@ -30,14 +30,14 @@ base class TestPage extends ElixirPage {
   final Set<String> tags;
 
   @override
-  Route<Object?> createRoute(BuildContext context) => ElixirPageRoute(this);
+  Route<Object?> createRoute(BuildContext context) => AlembicPageRoute(this);
 }
 
-final class DialogTestPage extends TestPage with ElixirDialogPage {
+final class DialogTestPage extends TestPage with AlembicDialogPage {
   const DialogTestPage(super.alias, {super.child});
 }
 
-final class SheetTestPage extends TestPage with ElixirSheetPage {
+final class SheetTestPage extends TestPage with AlembicSheetPage {
   const SheetTestPage(super.alias, {super.child, this.isScrollControlled = true});
 
   @override
@@ -53,10 +53,10 @@ final class SwipeTestPage extends TestPage {
 }
 
 final class _SwipeRoute extends PageRoute<Object?> with CupertinoRouteTransitionMixin<Object?> {
-  _SwipeRoute(ElixirPage page) : super(settings: page);
+  _SwipeRoute(AlembicPage page) : super(settings: page);
 
   @override
-  Widget buildContent(BuildContext context) => (settings as ElixirPage).child;
+  Widget buildContent(BuildContext context) => (settings as AlembicPage).child;
 
   @override
   String? get title => null;
@@ -69,22 +69,22 @@ class _Name extends StatelessWidget {
   const _Name();
 
   @override
-  Widget build(BuildContext context) => Text((ModalRoute.of(context)!.settings as ElixirPage).name);
+  Widget build(BuildContext context) => Text((ModalRoute.of(context)!.settings as AlembicPage).name);
 }
 
 /// A controller disposed at the end of the test.
-ElixirController controllerOf(
-  ElixirNavigationState pages, {
-  List<ElixirGuard> guards = const <ElixirGuard>[],
+AlembicController controllerOf(
+  AlembicNavigationState pages, {
+  List<AlembicGuard> guards = const <AlembicGuard>[],
   Listenable? revalidate,
-  ElixirAlias? name,
+  AlembicAlias? name,
 }) {
-  final controller = ElixirController(pages, guards: guards, revalidate: revalidate, name: name);
+  final controller = AlembicController(pages, guards: guards, revalidate: revalidate, name: name);
   addTearDown(controller.dispose);
   return controller;
 }
 
-List<Alias> aliases(ElixirController controller) => [for (final page in controller.state) page.alias as Alias];
+List<Alias> aliases(AlembicController controller) => [for (final page in controller.state) page.alias as Alias];
 
 Future<void> pumpApp(WidgetTester tester, Widget child) async {
   await tester.pumpWidget(MaterialApp(builder: (context, _) => child));

@@ -1,13 +1,13 @@
 /// Declarative Navigator 2.0 navigation built on widgets only.
 ///
-/// The navigation state is a list of pages owned by an [ElixirController]: every change goes through its guards, and
-/// an [Elixir] widget renders it.
+/// The navigation state is a list of pages owned by an [AlembicController]: every change goes through its guards, and
+/// an [Alembic] widget renders it.
 /// ```dart
-/// import 'package:elixir/elixir.dart';
+/// import 'package:alembic/alembic.dart';
 ///
-/// context.elixir.push(const SettingsPage());
-/// context.elixir.change((state) => [...state, const SettingsPage()]);
-/// context.elixir.popUntil(Routes.home);
+/// context.alembic.push(const SettingsPage());
+/// context.alembic.change((state) => [...state, const SettingsPage()]);
+/// context.alembic.popUntil(Routes.home);
 /// ```
 library;
 

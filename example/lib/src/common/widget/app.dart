@@ -1,4 +1,4 @@
-import 'package:elixir/elixir.dart';
+import 'package:alembic/alembic.dart';
 // ignore: unnecessary_import
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,8 +13,8 @@ class App extends StatefulWidget {
   /// {@macro app}
   const App({super.key});
 
-  /// The controller of the root Elixir, e.g. to leave a nested one.
-  static ElixirController controllerOf(BuildContext context) =>
+  /// The controller of the root Alembic, e.g. to leave a nested one.
+  static AlembicController controllerOf(BuildContext context) =>
       context.findAncestorStateOfType<_AppState>()!._controller;
 
   /// Switches between light and dark theme, to compare page transitions in both.
@@ -28,7 +28,7 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  late final ElixirController _controller = ElixirController(
+  late final AlembicController _controller = AlembicController(
     [const HomePage()],
     guards: const [RootGuard(HomePage()), ModalGuard()],
     name: AppRoutes.app,
@@ -37,11 +37,11 @@ class _AppState extends State<App> {
 
   void setThemeMode(ThemeMode mode) => setState(() => _themeMode = mode);
 
-  /// Every change of every Elixir, nested ones included, bubbles up to here.
-  void _log(ElixirNotification notification) {
-    l.i(Elixir.treeView);
+  /// Every change of every Alembic, nested ones included, bubbles up to here.
+  void _log(AlembicNotification notification) {
+    l.i(Alembic.treeView);
     l.i('--------------------------------');
-    l.i(Elixir.treeLine);
+    l.i(Alembic.treeLine);
     l.i('');
   }
 
@@ -73,6 +73,6 @@ class _AppState extends State<App> {
       textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: Colors.white)),
     ),
     themeMode: _themeMode,
-    builder: (context, _) => Elixir(controller: _controller, listener: _log),
+    builder: (context, _) => Alembic(controller: _controller, listener: _log),
   );
 }

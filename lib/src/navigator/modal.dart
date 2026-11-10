@@ -5,23 +5,23 @@ import 'package:flutter/widgets.dart';
 
 import 'page.dart';
 
-/// {@template elixir_dialog_page}
-/// Shows an [ElixirPage] as a dialog: centered above a barrier, with a fade.
+/// {@template alembic_dialog_page}
+/// Shows an [AlembicPage] as a dialog: centered above a barrier, with a fade.
 ///
-/// The page is tagged [ElixirPage.modalTag], and its route is page-based and built on widgets only.
+/// The page is tagged [AlembicPage.modalTag], and its route is page-based and built on widgets only.
 /// ```dart
-/// final class ConfirmPage extends AppPage with ElixirDialogPage {
+/// final class ConfirmPage extends AppPage with AlembicDialogPage {
 ///   const ConfirmPage() : super(child: const ConfirmDialog());
 ///
 ///   @override
-///   ElixirAlias get alias => Routes.confirm;
+///   AlembicAlias get alias => Routes.confirm;
 /// }
 ///
 /// final confirmed = await controller.pushForResult<bool>(const ConfirmPage());
 /// // in the dialog: Navigator.pop(context, true)
 /// ```
 /// {@endtemplate}
-base mixin ElixirDialogPage on ElixirPage {
+base mixin AlembicDialogPage on AlembicPage {
   /// Whether a tap on the barrier closes the dialog.
   bool get barrierDismissible => true;
 
@@ -32,28 +32,28 @@ base mixin ElixirDialogPage on ElixirPage {
   String get barrierLabel => 'Dismiss';
 
   @override
-  Set<String> get tags => {...super.tags, ElixirPage.modalTag};
+  Set<String> get tags => {...super.tags, AlembicPage.modalTag};
 
   @override
   Route<Object?> createRoute(BuildContext context) => _DialogRoute(this);
 }
 
-/// {@template elixir_sheet_page}
-/// Shows an [ElixirPage] as a modal bottom sheet, like Flutter's `showModalBottomSheet`: it slides up above a barrier,
+/// {@template alembic_sheet_page}
+/// Shows an [AlembicPage] as a modal bottom sheet, like Flutter's `showModalBottomSheet`: it slides up above a barrier,
 /// spans the width, may take the full height (at most 9/16 of it when [isScrollControlled] is false), and closes on a
 /// downward fling or when dragged below half its height.
 ///
-/// The page is tagged [ElixirPage.modalTag], and its route is page-based and built on widgets only.
+/// The page is tagged [AlembicPage.modalTag], and its route is page-based and built on widgets only.
 /// ```dart
-/// final class FiltersPage extends AppPage with ElixirSheetPage {
+/// final class FiltersPage extends AppPage with AlembicSheetPage {
 ///   const FiltersPage() : super(child: const FiltersSheet());
 ///
 ///   @override
-///   ElixirAlias get alias => Routes.filters;
+///   AlembicAlias get alias => Routes.filters;
 /// }
 /// ```
 /// {@endtemplate}
-base mixin ElixirSheetPage on ElixirPage {
+base mixin AlembicSheetPage on AlembicPage {
   /// Whether a tap on the barrier closes the sheet.
   bool get barrierDismissible => true;
 
@@ -75,16 +75,16 @@ base mixin ElixirSheetPage on ElixirPage {
   bool get useSafeArea => false;
 
   @override
-  Set<String> get tags => {...super.tags, ElixirPage.modalTag};
+  Set<String> get tags => {...super.tags, AlembicPage.modalTag};
 
   @override
   Route<Object?> createRoute(BuildContext context) => _SheetRoute(this);
 }
 
 final class _DialogRoute extends PopupRoute<Object?> {
-  _DialogRoute(ElixirDialogPage page) : super(settings: page);
+  _DialogRoute(AlembicDialogPage page) : super(settings: page);
 
-  ElixirDialogPage get _page => settings as ElixirDialogPage;
+  AlembicDialogPage get _page => settings as AlembicDialogPage;
 
   @override
   bool get barrierDismissible => _page.barrierDismissible;
@@ -120,7 +120,7 @@ final class _DialogRoute extends PopupRoute<Object?> {
 
 // A widgets-only port of Flutter's ModalBottomSheetRoute: the same layout, timing, curves and drag rules.
 final class _SheetRoute extends PopupRoute<Object?> {
-  _SheetRoute(ElixirSheetPage page) : super(settings: page);
+  _SheetRoute(AlembicSheetPage page) : super(settings: page);
 
   static const Curve _curve = Cubic(0, 0, 0.2, 1);
 
@@ -131,12 +131,12 @@ final class _SheetRoute extends PopupRoute<Object?> {
 
   static const double _maxHeightRatio = 9 / 16;
 
-  final GlobalKey _childKey = GlobalKey(debugLabel: 'ElixirSheetPage child');
+  final GlobalKey _childKey = GlobalKey(debugLabel: 'AlembicSheetPage child');
 
   /// Linear while a drag runs, so the sheet follows the finger; after it, the rest of the move eases from there.
   Curve _slideCurve = _curve;
 
-  ElixirSheetPage get _page => settings as ElixirSheetPage;
+  AlembicSheetPage get _page => settings as AlembicSheetPage;
 
   double get _childHeight => _childKey.currentContext!.size!.height;
 

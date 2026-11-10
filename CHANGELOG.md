@@ -1,3 +1,10 @@
+## 0.6.0
+
+- **Breaking:** the package is renamed from `elixir` to `alembic`, because `elixir` is taken on pub.dev. Import
+  `package:alembic/alembic.dart`; every `Elixir*` type becomes `Alembic*`, and `context.elixir` /
+  `context.maybeElixir` become `context.alembic` / `context.maybeAlembic`. See "Migrating from elixir 0.5" in the
+  README
+
 ## 0.5.0
 
 A new architecture: one controller owns the navigation state, guards are pure rules, and the `Elixir` widget is a thin

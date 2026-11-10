@@ -1,4 +1,4 @@
-import 'package:elixir/elixir.dart';
+import 'package:alembic/alembic.dart';
 import 'package:flutter/material.dart';
 
 import '../../common/routes/routes.dart';
@@ -22,13 +22,13 @@ class HomeScreen extends StatelessWidget {
         ),
         IconButton(
           icon: const Icon(Icons.settings),
-          onPressed: () => context.elixir.push(SettingsScopePage(data: 'Data from home')),
+          onPressed: () => context.alembic.push(SettingsScopePage(data: 'Data from home')),
         ),
       ],
     ),
-    // Elixir.stackOf rebuilds this text on every change of the root Elixir.
+    // Alembic.stackOf rebuilds this text on every change of the root Alembic.
     body: SafeArea(
-      child: Center(child: Text('Pages: ${Elixir.stackOf(context).map((page) => page.name).join(' > ')}')),
+      child: Center(child: Text('Pages: ${Alembic.stackOf(context).map((page) => page.name).join(' > ')}')),
     ),
   );
 }

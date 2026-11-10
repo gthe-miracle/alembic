@@ -1,4 +1,4 @@
-# Elixir
+# Alembic
 
 Declarative Navigator 2.0 navigation for Flutter. The navigation state is a list of pages owned by one controller:
 every change goes through pure guard rules, and a thin widget renders it.
@@ -9,12 +9,12 @@ controller.change((state) => [...state, const SettingsPage()]);
 
 ## Features
 
-- ✅ The navigation state is a plain `List<ElixirPage>`; rewrite it and the screens follow
-- ✅ One owner, `ElixirController`, that works and tests without widgets
+- ✅ The navigation state is a plain `List<AlembicPage>`; rewrite it and the screens follow
+- ✅ One owner, `AlembicController`, that works and tests without widgets
 - ✅ Guards: pure `(from, to) => to` rules applied to every change, re-run by a `Listenable`
 - ✅ Results: `await controller.pushForResult<bool>(page)`, completed by `pop(result)` or `Navigator.pop(context, result)`
-- ✅ Dialogs and bottom sheets as pages (`ElixirDialogPage`, `ElixirSheetPage`)
-- ✅ Nested Elixirs with innermost, newest-first system back handling and correct Android predictive back
+- ✅ Dialogs and bottom sheets as pages (`AlembicDialogPage`, `AlembicSheetPage`)
+- ✅ Nested Alembics with innermost, newest-first system back handling and correct Android predictive back
 - ✅ One `NotificationListener` at the root hears every navigator of the app
 - ✅ No Material dependency: pages build any `Route` (Material, Cupertino or custom)
 
@@ -22,9 +22,9 @@ controller.change((state) => [...state, const SettingsPage()]);
 
 ```yaml
 dependencies:
-  elixir:
+  alembic:
     git:
-      url: https://github.com/gthe-miracle/elixir.git
+      url: https://github.com/gthe-miracle/alembic.git
 ```
 
 ## Usage
@@ -32,8 +32,8 @@ dependencies:
 ### 1. Aliases
 
 ```dart
-enum Routes implements ElixirAlias {
-  app('app'), // names the root Elixir
+enum Routes implements AlembicAlias {
+  app('app'), // names the root Alembic
   home('home'),
   product('product'),
   settings('settings'),
@@ -54,7 +54,7 @@ once in a sealed base page:
 
 ```dart
 @immutable
-sealed class AppPage extends ElixirPage {
+sealed class AppPage extends AlembicPage {
   const AppPage({required super.child, super.arguments, super.key});
 
   @override
@@ -83,7 +83,7 @@ final class HomePage extends AppPage {
   const HomePage() : super(child: const HomeScreen());
 
   @override
-  ElixirAlias get alias => Routes.home;
+  AlembicAlias get alias => Routes.home;
 }
 
 final class ProductPage extends AppPage {
@@ -96,20 +96,20 @@ final class ProductPage extends AppPage {
   LocalKey get key => ValueKey<String>('product/$id');
 
   @override
-  ElixirAlias get alias => Routes.product;
+  AlembicAlias get alias => Routes.product;
 }
 ```
 
-Without Material, `ElixirPageRoute(this)` is a widgets-only page-based route with a `transitionsBuilder` hook.
+Without Material, `AlembicPageRoute(this)` is a widgets-only page-based route with a `transitionsBuilder` hook.
 
-The route must be page-based: it reads `(settings as ElixirPage).child` on every build. A `MaterialPageRoute(builder:)`
+The route must be page-based: it reads `(settings as AlembicPage).child` on every build. A `MaterialPageRoute(builder:)`
 captures the first child, so a new instance of the page with the same key would never reach the screen.
 
 ### 3. Controller and widget
 
 ```dart
 class _AppState extends State<App> {
-  late final ElixirController _controller = ElixirController(
+  late final AlembicController _controller = AlembicController(
     [const HomePage()],
     guards: const [RootGuard(HomePage()), ModalGuard()],
     name: Routes.app,
@@ -123,24 +123,24 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    builder: (context, _) => Elixir(controller: _controller),
+    builder: (context, _) => Alembic(controller: _controller),
   );
 }
 ```
 
 ### 4. Navigate
 
-`context.elixir` is the controller of the closest Elixir:
+`context.alembic` is the controller of the closest Alembic:
 
 ```dart
-context.elixir.push(const SettingsPage());            // a page already in the state moves to the top
-context.elixir.pop();                                  // never removes the last page
-context.elixir.popUntil(Routes.home);                  // to the topmost page with the alias
-context.elixir.removeTag('checkout');
-context.elixir.reset();                                // back to the initial state, through the guards
-context.elixir.change((state) => [state.first, ProductPage(1)]);
+context.alembic.push(const SettingsPage());            // a page already in the state moves to the top
+context.alembic.pop();                                  // never removes the last page
+context.alembic.popUntil(Routes.home);                  // to the topmost page with the alias
+context.alembic.removeTag('checkout');
+context.alembic.reset();                                // back to the initial state, through the guards
+context.alembic.change((state) => [state.first, ProductPage(1)]);
 
-final confirmed = await context.elixir.pushForResult<bool>(const ConfirmPage());
+final confirmed = await context.alembic.pushForResult<bool>(const ConfirmPage());
 ```
 
 Inside a page, the usual `Navigator.maybePop(context)` and `Navigator.pop(context, result)` work too: the controller
@@ -153,11 +153,11 @@ A guard receives the committed state `from` and the requested state `to`, and re
 testable as functions. Their dependencies go to their constructor, and `revalidate` re-runs them:
 
 ```dart
-final controller = ElixirController(
+final controller = AlembicController(
   [const HomePage()],
   guards: [
     const RootGuard(HomePage()),
-    ElixirGuard((from, to) => auth.isSignedIn ? to : [const SignInPage()]),
+    AlembicGuard((from, to) => auth.isSignedIn ? to : [const SignInPage()]),
   ],
   revalidate: auth, // a Listenable
 );
@@ -169,7 +169,7 @@ Every change runs this pipeline:
 3. dedupe again.
 
 An empty result is reported and rejected. A result equal to the current state is ignored. A guard that throws is
-reported to `FlutterError` and skipped. A guard with state of its own implements `ElixirGuard`.
+reported to `FlutterError` and skipped. A guard with state of its own implements `AlembicGuard`.
 
 Built-in guards:
 - `RootGuard(page)` keeps a page at the bottom.
@@ -182,22 +182,22 @@ To stop the user from closing a page, use `PopScope`.
 A modal is a page: add a mixin to it.
 
 ```dart
-final class ConfirmPage extends AppPage with ElixirDialogPage {
+final class ConfirmPage extends AppPage with AlembicDialogPage {
   const ConfirmPage() : super(child: const ConfirmDialog());
 
   @override
-  ElixirAlias get alias => Routes.confirm;
+  AlembicAlias get alias => Routes.confirm;
 }
 
-final class FiltersPage extends AppPage with ElixirSheetPage {
+final class FiltersPage extends AppPage with AlembicSheetPage {
   const FiltersPage() : super(child: const FiltersSheet());
 
   @override
-  ElixirAlias get alias => Routes.filters;
+  AlembicAlias get alias => Routes.filters;
 }
 ```
 
-Both mixins tag the page `ElixirPage.modalTag`, so `controller.removeTag(ElixirPage.modalTag)` closes every modal at
+Both mixins tag the page `AlembicPage.modalTag`, so `controller.removeTag(AlembicPage.modalTag)` closes every modal at
 once. Their routes are widgets-only and page-based. The mixins expose these getters:
 - `barrierDismissible`
 - `barrierColor`
@@ -210,32 +210,32 @@ dragged below half its height. It draws nothing itself, so its child brings the 
 
 ## Observing navigation
 
-Every committed change is dispatched as an `ElixirNotification` that bubbles up through the outer Elixirs. `listener`
-on an Elixir hears that Elixir and every Elixir nested inside it, so `listener` on the root hears the whole app:
+Every committed change is dispatched as an `AlembicNotification` that bubbles up through the outer Alembics. `listener`
+on an Alembic hears that Alembic and every Alembic nested inside it, so `listener` on the root hears the whole app:
 
 ```dart
-Elixir(
+Alembic(
   controller: controller,
   listener: (n) => analytics.screens(n.controller.name, added: n.added, removed: n.removed),
 )
 ```
 
-`controller.name` tells the Elixirs apart. `listener` never stops the notification, and an error it throws is reported
+`controller.name` tells the Alembics apart. `listener` never stops the notification, and an error it throws is reported
 instead of breaking the listeners above.
 
-`listener` is a shortcut for a `NotificationListener<ElixirNotification>` wrapped around the Elixir. Use the
-`NotificationListener` directly to hear the changes from a widget above the Elixir, or to stop one by returning `true`.
+`listener` is a shortcut for a `NotificationListener<AlembicNotification>` wrapped around the Alembic. Use the
+`NotificationListener` directly to hear the changes from a widget above the Alembic, or to stop one by returning `true`.
 
 You can also watch the state directly:
-- `ElixirController` is a `ValueListenable<List<ElixirPage>>`, so it works with `ListenableBuilder` and with code
+- `AlembicController` is a `ValueListenable<List<AlembicPage>>`, so it works with `ListenableBuilder` and with code
   outside the widget tree.
-- `Elixir.stackOf(context)` rebuilds a widget on every change.
+- `Alembic.stackOf(context)` rebuilds a widget on every change.
 
-For debug logs, `Elixir.treeView` draws every mounted Elixir, nested ones under their pages, each page with its
+For debug logs, `Alembic.treeView` draws every mounted Alembic, nested ones under their pages, each page with its
 arguments as JSON and the pages on screen in green (ANSI colors):
 
 ```dart
-Elixir(controller: controller, listener: (_) => log(Elixir.treeView));
+Alembic(controller: controller, listener: (_) => log(Alembic.treeView));
 ```
 
 ```text
@@ -246,27 +246,27 @@ app
    └─ notifications
 ```
 
-For analytics, `Elixir.treeLine` is the same tree on one line, without colors:
-`app(home, profile {"id": 1}, settings(notifications))`. Read it after the frame, so the Elixir nested in a page that was
+For analytics, `Alembic.treeLine` is the same tree on one line, without colors:
+`app(home, profile {"id": 1}, settings(notifications))`. Read it after the frame, so the Alembic nested in a page that was
 just pushed is already mounted:
 
 ```dart
-listener: (_) => WidgetsBinding.instance.addPostFrameCallback((_) => analytics.log(Elixir.treeLine)),
+listener: (_) => WidgetsBinding.instance.addPostFrameCallback((_) => analytics.log(Alembic.treeLine)),
 ```
 
 ## Back button
 
-The system back button goes to the visible nested Elixirs first, newest first, then to `navigator.maybePop()`. So:
+The system back button goes to the visible nested Alembics first, newest first, then to `navigator.maybePop()`. So:
 - an open dialog or sheet closes first;
 - `PopScope` is respected;
-- a nested Elixir with one page hands the press to its parent;
+- a nested Alembic with one page hands the press to its parent;
 - the root page lets the platform close the app.
 
-A nested Elixir under a covered route, or in a hidden `IndexedStack` tab, is skipped. The root Elixir reports one
+A nested Alembic under a covered route, or in a hidden `IndexedStack` tab, is skipped. The root Alembic reports one
 `canHandlePop` for the whole tree, so Android's predictive back gesture only closes the app when nothing can go back.
 
 ```dart
-Elixir(
+Alembic(
   controller: controller,
   onBackButtonPressed: (navigator) async {
     if (controller.state.last.tags.contains('checkout')) {
@@ -286,18 +286,18 @@ The example has a widgets-only port of Flutter's iOS edge swipe for custom route
 `CupertinoRouteTransitionMixin` always have the swipe, and those built with `MaterialRouteTransitionMixin` get it from
 a theme that uses `CupertinoPageTransitionsBuilder`.
 
-Like the back button, the swipe respects a nested Elixir: while it is visible and can pop, the route hosting it can't be
-swiped away. The swipe goes to its top page, and over an open dialog or sheet it does nothing. A nested Elixir with
+Like the back button, the swipe respects a nested Alembic: while it is visible and can pop, the route hosting it can't be
+swiped away. The swipe goes to its top page, and over an open dialog or sheet it does nothing. A nested Alembic with
 `onBackButtonPressed` doesn't block its route, since the callback may decline the press.
 
 ## Core API
 
-### ElixirPage
+### AlembicPage
 
 | Member          | Type                   | Description                                                           |
 | --------------- | ---------------------- | --------------------------------------------------------------------- |
 | `child`         | `Widget`               | The content of the page                                               |
-| `alias`         | `ElixirAlias`          | Required; usually an enum value                                       |
+| `alias`         | `AlembicAlias`          | Required; usually an enum value                                       |
 | `name`          | `String`               | `alias.alias`                                                         |
 | `tags`          | `Set<String>`          | Optional marks, used by `removeTag` and `ModalGuard`                  |
 | `arguments`     | `Map<String, Object?>` | Optional; empty by default                                            |
@@ -306,11 +306,11 @@ swiped away. The swipe goes to its top page, and over an open dialog or sheet it
 
 Pages compare by identity; the controller identifies them by `key`.
 
-### ElixirController
+### AlembicController
 
 | Member                         | Description                                                           |
 | ------------------------------ | --------------------------------------------------------------------- |
-| `ElixirController(initial, …)` | `guards`, `revalidate` (`Listenable`), `name` (`ElixirAlias`)         |
+| `AlembicController(initial, …)` | `guards`, `revalidate` (`Listenable`), `name` (`AlembicAlias`)         |
 | `state` / `value`              | The current pages, unmodifiable                                       |
 | `change(fn)`                   | Rewrites the state; every other method is a shortcut for it           |
 | `push(page)`                   | Adds a page on top, or moves its key to the top                       |
@@ -325,24 +325,24 @@ Pages compare by identity; the controller identifies them by `key`.
 A change requested while another one is committed (from a listener, for example) is queued and applied after it. After
 64 changes in a row the rest are reported and dropped.
 
-### Elixir
+### Alembic
 
 | Parameter                    | Type                         | Description                                         |
 | ---------------------------- | ---------------------------- | --------------------------------------------------- |
-| `controller`                 | `ElixirController`           | Required                                            |
-| `listener`                   | `ElixirListener?`            | Changes of this Elixir and of the nested ones       |
+| `controller`                 | `AlembicController`           | Required                                            |
+| `listener`                   | `AlembicListener?`            | Changes of this Alembic and of the nested ones       |
 | `observers`                  | `List<NavigatorObserver>`    | Observers of the underlying `Navigator`             |
 | `transitionDelegate`         | `TransitionDelegate<Object?>`| Defaults to `DefaultTransitionDelegate`             |
-| `onBackButtonPressed`        | `ElixirBackHandler?`         | Replaces `navigator.maybePop()`                     |
+| `onBackButtonPressed`        | `AlembicBackHandler?`         | Replaces `navigator.maybePop()`                     |
 | `restorationScopeId`         | `String?`                    | Enables state restoration of the navigator          |
 | `reportsRouteUpdateToEngine` | `bool`                       | Defaults to `false`                                 |
 
 Static access works as follows:
-- `Elixir.of(context)` and `Elixir.maybeOf(context)` return the controller, the same as `context.elixir` and
-  `context.maybeElixir`;
-- `Elixir.stackOf(context)` returns the pages and rebuilds on every change;
-- `Elixir.treeView` returns the pages of every Elixir as a tree, nested Elixirs under their pages;
-- `Elixir.treeLine` returns the same tree on one line, for analytics.
+- `Alembic.of(context)` and `Alembic.maybeOf(context)` return the controller, the same as `context.alembic` and
+  `context.maybeAlembic`;
+- `Alembic.stackOf(context)` returns the pages and rebuilds on every change;
+- `Alembic.treeView` returns the pages of every Alembic as a tree, nested Alembics under their pages;
+- `Alembic.treeLine` returns the same tree on one line, for analytics.
 
 ## Design
 
@@ -354,26 +354,35 @@ Static access works as follows:
 | The page is the `Page` | The Navigator's own key diff keeps routes and their state. |
 | A change carries its results | A pop result travels with the change that removed the page. |
 
-## Migrating from 0.4
+## Migrating from elixir 0.5
 
-| 0.4 | 0.5 |
+The package was renamed from `elixir` to `alembic` in 0.6.0, because `elixir` is taken on pub.dev. The API is the same:
+
+- the dependency is `alembic`, from `https://github.com/gthe-miracle/alembic.git`;
+- `package:elixir/elixir.dart` becomes `package:alembic/alembic.dart`;
+- every `Elixir*` type becomes `Alembic*` (`ElixirController` → `AlembicController`, `Elixir` → `Alembic`, …);
+- `context.elixir` / `context.maybeElixir` become `context.alembic` / `context.maybeAlembic`.
+
+## Migrating from elixir 0.4
+
+| elixir 0.4 | alembic 0.6 |
 | --- | --- |
-| `ValueNotifier<ElixirNavigationState>` + `Elixir.controlled(controller:)` / `Elixir(pages:)` | `ElixirController(pages, guards:, revalidate:, name:)` + `Elixir(controller:)` |
-| `guards: [(context, state) => …]` on the widget | `guards: [ElixirGuard((from, to) => …)]` on the controller; read dependencies when you create the controller |
+| `ValueNotifier<ElixirNavigationState>` + `Elixir.controlled(controller:)` / `Elixir(pages:)` | `AlembicController(pages, guards:, revalidate:, name:)` + `Alembic(controller:)` |
+| `guards: [(context, state) => …]` on the widget | `guards: [AlembicGuard((from, to) => …)]` on the controller; read dependencies when you create the controller |
 | `state.toSet().toList()` guard | Built in: the last page of each key wins |
-| `context.elixir` → `ElixirState` | `context.elixir` → `ElixirController` |
+| `context.elixir` → `ElixirState` | `context.alembic` → `AlembicController` |
 | `listeners: [(elixir, previous, next) {}]` | `listener: (notification) {}` |
-| `context.elixir.observer.addListener(…)` | `listener` on the root Elixir, or a `NotificationListener<ElixirNotification>` above it |
+| `context.elixir.observer.addListener(…)` | `listener` on the root Alembic, or a `NotificationListener<AlembicNotification>` above it |
 | `onBackButtonPressed: (state) => (state:, handled:)` | `onBackButtonPressed: (navigator) async => …` |
 | `super(name: …, child: …)`, required `tags`, `==` override | `super(child: …)`; `tags` optional; no `==` override |
 | `Route<void> createRoute` with `MaterialPageRoute(builder:)` | `Route<Object?> createRoute` with a page-based route |
 | `reset(page)` | `reset()` |
-| `Elixir.stateOf` / `Elixir.navigatorOf` | `Elixir.stackOf` / `Navigator.of(pageContext)` |
+| `Elixir.stateOf` / `Elixir.navigatorOf` | `Alembic.stackOf` / `Navigator.of(pageContext)` |
 
 ## Example
 
 See [example/](example/) for an app with:
-- a nested Elixir;
+- a nested Alembic;
 - a dialog page that returns a result;
 - a sheet page;
 - a custom swipe-back route.

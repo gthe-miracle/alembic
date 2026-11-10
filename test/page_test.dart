@@ -1,4 +1,4 @@
-import 'package:elixir/elixir.dart';
+import 'package:alembic/alembic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -35,7 +35,7 @@ void main() {
 
   testWidgets('W16: a page replaced under the same key updates the screen and keeps the route', (tester) async {
     final controller = controllerOf([const TestPage(Alias.a), const TestPage(Alias.b, child: Text('old'))]);
-    await pumpApp(tester, Elixir(controller: controller));
+    await pumpApp(tester, Alembic(controller: controller));
     final route = ModalRoute.of(tester.element(find.text('old')));
 
     controller.change((state) => [state.first, const TestPage(Alias.b, child: Text('new'))]);

@@ -1,4 +1,4 @@
-import 'package:elixir/elixir.dart';
+import 'package:alembic/alembic.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,7 +9,7 @@ const b = TestPage(Alias.b);
 const c = TestPage(Alias.c);
 const d = TestPage(Alias.d);
 
-List<Alias> names(ElixirNavigationState state) => [for (final page in state) page.alias as Alias];
+List<Alias> names(AlembicNavigationState state) => [for (final page in state) page.alias as Alias];
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +19,7 @@ void main() {
       final controller = controllerOf(
         [a],
         guards: [
-          ElixirGuard(
+          AlembicGuard(
             (from, to) => to.any((page) => page.alias == Alias.b) ? [...to.where((p) => p.alias != Alias.b), c] : to,
           ),
         ],
@@ -36,8 +36,8 @@ void main() {
 
     test('W2: the initial state is validated without any widget', () {
       expect(aliases(controllerOf([b], guards: [const RootGuard(a)])), [Alias.a, Alias.b]);
-      expect(() => ElixirController([]), throwsArgumentError);
-      expect(() => ElixirController([a], guards: [ElixirGuard((from, to) => [])]), throwsArgumentError);
+      expect(() => AlembicController([]), throwsArgumentError);
+      expect(() => AlembicController([a], guards: [AlembicGuard((from, to) => [])]), throwsArgumentError);
     });
 
     test('W3: a guard gets the committed state and the requested one', () {
@@ -45,7 +45,7 @@ void main() {
       final controller = controllerOf(
         [a],
         guards: [
-          ElixirGuard((from, to) {
+          AlembicGuard((from, to) {
             calls.add('${names(from)} -> ${names(to)}');
             return to;
           }),
@@ -53,11 +53,11 @@ void main() {
       )..push(b);
 
       expect(calls, ['[] -> [Alias.a]', '[Alias.a] -> [Alias.a, Alias.b]']);
-      expect('${controller.guards.single}', 'ElixirGuard()');
+      expect('${controller.guards.single}', 'AlembicGuard()');
     });
 
     test('W3: a guard returning `from` cancels the change', () {
-      final controller = controllerOf([a], guards: [ElixirGuard((from, to) => to.length > 2 ? from : to)])
+      final controller = controllerOf([a], guards: [AlembicGuard((from, to) => to.length > 2 ? from : to)])
         ..push(b)
         ..push(c);
 
@@ -96,7 +96,7 @@ void main() {
       final errors = captureErrors();
       final controller = controllerOf(
         [a],
-        guards: [ElixirGuard((from, to) => throw StateError('broken')), const RootGuard(a)],
+        guards: [AlembicGuard((from, to) => throw StateError('broken')), const RootGuard(a)],
       )..change((_) => [b]);
 
       expect(aliases(controller), [Alias.a, Alias.b]);
@@ -139,7 +139,7 @@ void main() {
       final controller = controllerOf(
         [a],
         guards: [
-          ElixirGuard(
+          AlembicGuard(
             (from, to) => switch ((signedIn.value, names(to))) {
               (false, _) => [const TestPage(Alias.login)],
               (true, [Alias.login]) => [a],
@@ -172,7 +172,7 @@ void main() {
         ..push(b);
       expect(aliases(controller), [Alias.a, Alias.b, Alias.dialog, Alias.sheet]);
 
-      controller.removeTag(ElixirPage.modalTag);
+      controller.removeTag(AlembicPage.modalTag);
       expect(aliases(controller), [Alias.a, Alias.b]);
     });
   });
@@ -190,7 +190,7 @@ void main() {
       var dropB = false;
       final controller = controllerOf(
         [a, b],
-        guards: [ElixirGuard((from, to) => dropB ? to.where((page) => page.alias != Alias.b).toList() : to)],
+        guards: [AlembicGuard((from, to) => dropB ? to.where((page) => page.alias != Alias.b).toList() : to)],
       )..push(c);
       dropB = true;
       controller.reset();
@@ -247,14 +247,14 @@ void main() {
     });
 
     test('a push rejected by a guard completes with null', () async {
-      final controller = controllerOf([a], guards: [ElixirGuard((from, to) => to.length > 1 ? from : to)]);
+      final controller = controllerOf([a], guards: [AlembicGuard((from, to) => to.length > 1 ? from : to)]);
 
       expect(await controller.pushForResult<bool>(b), isNull);
     });
 
     test('a pop cancelled by a guard drops its result', () async {
       var locked = true;
-      final controller = controllerOf([a], guards: [ElixirGuard((from, to) => locked && from.length > 1 ? from : to)]);
+      final controller = controllerOf([a], guards: [AlembicGuard((from, to) => locked && from.length > 1 ? from : to)]);
       final result = controller.pushForResult<bool>(b);
       controller.pop(true);
       expect(aliases(controller), [Alias.a, Alias.b]);

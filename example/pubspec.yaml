@@ -15,7 +15,7 @@ dependencies:
 
   logbook: ^0.6.1
 
-  elixir:
+  alembic:
     path: ../
 
 dev_dependencies:
