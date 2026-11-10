@@ -145,9 +145,19 @@ void main() {
     expect(aliases(controller), [Alias.a]);
   });
 
-  testWidgets('a sheet spans the width and at most 9/16 of the height', (tester) async {
+  testWidgets('a sheet spans the width and the full height by default', (tester) async {
     final controller = await _pump(tester);
     controller.push(const SheetTestPage(Alias.sheet, child: SizedBox.expand(key: Key('tall'))));
+    await tester.pumpAndSettle();
+
+    expect(tester.getRect(find.byKey(const Key('tall'))), const Rect.fromLTRB(0, 0, 800, 600));
+  });
+
+  testWidgets('a sheet without isScrollControlled takes at most 9/16 of the height', (tester) async {
+    final controller = await _pump(tester);
+    controller.push(
+      const SheetTestPage(Alias.sheet, isScrollControlled: false, child: SizedBox.expand(key: Key('tall'))),
+    );
     await tester.pumpAndSettle();
 
     expect(tester.getRect(find.byKey(const Key('tall'))), const Rect.fromLTRB(0, 600 - 600 * 9 / 16, 800, 600));

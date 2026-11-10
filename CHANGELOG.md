@@ -24,8 +24,8 @@ adapter. See "Migrating from 0.4" in the README.
   `pushForResult` too
 - Added `ElixirDialogPage` and `ElixirSheetPage` (widgets-only, page-based), `ElixirPage.modalTag`, `RootGuard`,
   `ModalGuard`, `ElixirPageRoute`, `Elixir.stackOf`, `removeTag`, `remove` and `context.maybeElixir`
-- `ElixirSheetPage` ports Flutter's `ModalBottomSheetRoute`: full width, at most 9/16 of the height unless
-  `isScrollControlled`, `useSafeArea`, its timing and curves, fling to close, and closing a `DraggableScrollableSheet`
+- `ElixirSheetPage` ports Flutter's `ModalBottomSheetRoute`: full width, the full height by default (`isScrollControlled`
+  is true; false caps it at 9/16, as in Flutter), `useSafeArea`, its timing and curves, fling to close, and closing a `DraggableScrollableSheet`
   at its minimum extent
 - Added `Elixir.treeView`, the tree of every Elixir for debug logs, and `Elixir.treeLine`, the same on one line for
   analytics

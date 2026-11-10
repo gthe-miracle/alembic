@@ -38,7 +38,10 @@ final class DialogTestPage extends TestPage with ElixirDialogPage {
 }
 
 final class SheetTestPage extends TestPage with ElixirSheetPage {
-  const SheetTestPage(super.alias, {super.child});
+  const SheetTestPage(super.alias, {super.child, this.isScrollControlled = true});
+
+  @override
+  final bool isScrollControlled;
 }
 
 /// A page with the edge swipe of a Cupertino route.

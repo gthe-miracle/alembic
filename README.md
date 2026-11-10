@@ -204,9 +204,9 @@ once. Their routes are widgets-only and page-based. The mixins expose these gett
 - `barrierLabel`
 - `enableDrag`, `isScrollControlled` and `useSafeArea` (sheet only)
 
-A sheet works like Flutter's `showModalBottomSheet`: it spans the width, takes at most 9/16 of the height unless
-`isScrollControlled`, and closes on a downward fling or when dragged below half its height. It draws nothing itself, so
-its child brings the background, shape and bottom padding.
+A sheet works like Flutter's `showModalBottomSheet`: it spans the width, may take the full height (`isScrollControlled`
+is true by default; set it to false to cap the sheet at 9/16 of the height), and closes on a downward fling or when
+dragged below half its height. It draws nothing itself, so its child brings the background, shape and bottom padding.
 
 ## Observing navigation
 

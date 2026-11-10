@@ -40,8 +40,8 @@ base mixin ElixirDialogPage on ElixirPage {
 
 /// {@template elixir_sheet_page}
 /// Shows an [ElixirPage] as a modal bottom sheet, like Flutter's `showModalBottomSheet`: it slides up above a barrier,
-/// spans the width, takes at most 9/16 of the height unless [isScrollControlled], and closes on a downward fling or
-/// when dragged below half its height.
+/// spans the width, may take the full height (at most 9/16 of it when [isScrollControlled] is false), and closes on a
+/// downward fling or when dragged below half its height.
 ///
 /// The page is tagged [ElixirPage.modalTag], and its route is page-based and built on widgets only.
 /// ```dart
@@ -66,7 +66,8 @@ base mixin ElixirSheetPage on ElixirPage {
   /// Whether a downward drag closes the sheet.
   bool get enableDrag => true;
 
-  /// Whether the sheet may take the full height instead of 9/16 of it, e.g. for a [DraggableScrollableSheet].
+  /// Whether the sheet may take the full height, e.g. for a [DraggableScrollableSheet]. When false, it takes at most
+  /// 9/16 of it, like `showModalBottomSheet` by default.
   bool get isScrollControlled => true;
 
   /// Whether the sheet avoids the system intrusions at the top, left and right. Otherwise the top padding is removed
