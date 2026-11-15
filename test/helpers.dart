@@ -20,7 +20,7 @@ enum Alias implements AlembicAlias {
 
 /// A page showing its name, unless it is given a child.
 base class TestPage extends AlembicPage {
-  const TestPage(this.alias, {Widget? child, super.arguments, super.key, this.tags = const <String>{}})
+  const TestPage(this.alias, {Widget? child, super.arguments, super.key, super.canPop, this.tags = const <String>{}})
     : super(child: child ?? const _Name());
 
   @override

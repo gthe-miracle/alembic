@@ -35,7 +35,14 @@ typedef AlembicNavigationState = List<AlembicPage>;
 @immutable
 abstract base class AlembicPage extends Page<Object?> {
   /// {@macro alembic_page}
-  const AlembicPage({required this.child, Map<String, Object?>? super.arguments, super.key, super.restorationId});
+  const AlembicPage({
+    required this.child,
+    Map<String, Object?>? super.arguments,
+    super.key,
+    super.restorationId,
+    super.canPop,
+    super.onPopInvoked,
+  });
 
   /// The tag of the pages that cover the screen with a barrier: dialogs and sheets.
   ///
@@ -63,7 +70,8 @@ abstract base class AlembicPage extends Page<Object?> {
   /// The identity of the page in the state; keys must be unique within one state.
   ///
   /// Defaults to the key given to the constructor, otherwise to `name`, or `name?a=1&b` with [arguments] (`b` has a
-  /// `null` value). `%`, `&`, `=` and `?` are escaped, so a separator inside a value never produces another key.
+  /// `null` value). `%`, `&`, `=` and `?` are escaped, so a separator inside a value never produces another key. The
+  /// values are written with their `toString()`; a value without one of its own fails an assertion in debug mode.
   ///
   /// A page that keeps its parameters in fields must override it, otherwise all its instances are one screen:
   /// ```dart
@@ -79,11 +87,21 @@ abstract base class AlembicPage extends Page<Object?> {
         .map(
           (entry) => switch (entry.value) {
             null => _escape(entry.key),
-            final Object value => '${_escape(entry.key)}=${_escape('$value')}',
+            final Object value => '${_escape(entry.key)}=${_escape(_describe(entry.key, value))}',
           },
         )
         .join('&');
     return ValueKey<String>('$name?$query');
+  }
+
+  String _describe(String argument, Object value) {
+    final text = '$value';
+    assert(
+      !text.startsWith("Instance of '"),
+      'The argument "$argument" of the page "$name" has no toString(), so every value of it gives the same key and '
+      'the pages become one screen. Override `key` in the page, or give it a key.',
+    );
+    return text;
   }
 
   static String _escape(String value) =>

@@ -28,7 +28,7 @@ or in `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  alembic: ^0.6.1
+  alembic: ^0.7.0
 ```
 
 Then import it:
@@ -179,13 +179,14 @@ Every change runs this pipeline:
 3. dedupe again.
 
 An empty result is reported and rejected. A result equal to the current state is ignored. A guard that throws is
-reported to `FlutterError` and skipped. A guard with state of its own implements `AlembicGuard`.
+reported to `FlutterError` and cancels the change, so a broken rule never lets through what it was there to stop. A
+guard with state of its own implements `AlembicGuard`.
 
 Built-in guards:
 - `RootGuard(page)` keeps a page at the bottom.
 - `ModalGuard()` keeps dialogs and sheets above the screens.
 
-To stop the user from closing a page, use `PopScope`.
+To stop the user from closing a page, use `PopScope`, or pass `canPop: false` to the page.
 
 ## Dialogs and sheets
 
@@ -312,9 +313,11 @@ swiped away. The swipe goes to its top page, and over an open dialog or sheet it
 | `tags`          | `Set<String>`          | Optional marks, used by `removeTag` and `ModalGuard`                  |
 | `arguments`     | `Map<String, Object?>` | Optional; empty by default                                            |
 | `key`           | `LocalKey`             | The given key, else `name` or `name?a=1&b` (escaped)                  |
+| `canPop`        | `bool`                 | Optional; `false` keeps the page open on back, like a `PopScope`      |
 | `createRoute()` | `Route<Object?>`       | Required; must be page-based                                          |
 
-Pages compare by identity; the controller identifies them by `key`.
+Pages compare by identity; the controller identifies them by `key`. The default key writes the argument values with
+their `toString()`, so a value without one of its own fails an assertion in debug mode: override `key` for such a page.
 
 ### AlembicController
 
@@ -368,7 +371,7 @@ Static access works as follows:
 
 The package was renamed from `elixir` to `alembic` in 0.6.0, because `elixir` is taken on pub.dev. The API is the same:
 
-- the dependency is `alembic`, from `https://github.com/gthe-miracle/alembic.git`;
+- the dependency is `alembic`, from pub.dev;
 - `package:elixir/elixir.dart` becomes `package:alembic/alembic.dart`;
 - every `Elixir*` type becomes `Alembic*` (`ElixirController` → `AlembicController`, `Elixir` → `Alembic`, …);
 - `context.elixir` / `context.maybeElixir` become `context.alembic` / `context.maybeAlembic`.

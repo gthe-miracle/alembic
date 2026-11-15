@@ -1,9 +1,11 @@
 {
-  "dart.flutterSdkPath": ".fvm/versions/3.47.8",
+  "dart.flutterSdkPath": ".fvm/versions/3.47.9",
   "[dart]": {
     "editor.formatOnSave": true,
     "editor.formatOnType": true,
-    "editor.rulers": [120]
+    "editor.rulers": [
+      120
+    ]
   },
   "git.autofetch": true,
   "git.confirmSync": false,
@@ -12,5 +14,10 @@
     "statusBar.background": "#b72bb5",
     "statusBar.foreground": "#000000"
   },
-  "cSpell.words": ["Cupertino", "dedupe", "endtemplate", "pubspec"]
+  "cSpell.words": [
+    "Cupertino",
+    "dedupe",
+    "endtemplate",
+    "pubspec"
+  ]
 }

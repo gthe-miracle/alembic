@@ -1,3 +1,15 @@
+## 0.7.0
+
+- **Breaking:** a guard that throws now cancels the change instead of being skipped, so a broken rule, e.g. an auth
+  guard, never lets through what it was there to stop. The error is still reported to `FlutterError`. A guard that
+  throws on the initial state makes the constructor throw its `ArgumentError`
+- The default key of a page asserts in debug mode that every argument has a `toString()` of its own: two values
+  printed as `Instance of 'User'` gave one key, and the pages silently became one screen. Override `key` for such pages
+- `AlembicPage` takes `canPop` and `onPopInvoked` and passes them to `Page`
+- Fixed: the Alembic kept an entry for every page removed through the controller, for as long as it was mounted
+- Fixed: the route of `AlembicDialogPage` added a status listener to its animation on every build
+- CI tests the minimum Flutter (3.35.0) and the latest stable
+
 ## 0.6.1
 
 - The README installs the package from pub.dev (`alembic: ^0.6.1`) and shows the import

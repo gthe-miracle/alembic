@@ -20,6 +20,11 @@ void main() {
     expect(const TestPage(Alias.a, key: ValueKey('own')).key, const ValueKey('own'));
   });
 
+  test('W27: an argument without a toString of its own cannot make the default key', () {
+    expect(() => const TestPage(Alias.a, arguments: {'o': Object()}).key, throwsAssertionError);
+    expect(const TestPage(Alias.a, arguments: {'o': Object()}, key: ValueKey('own')).key, const ValueKey('own'));
+  });
+
   test('W15, W20: pages compare by identity, the name comes from the alias, tags and arguments are optional', () {
     final id = DateTime(2025).year; // a runtime value: two distinct instances
     final first = TestPage(Alias.a, arguments: {'id': id});

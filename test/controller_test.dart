@@ -92,15 +92,28 @@ void main() {
       expect(controller.state.length, lessThan(70));
     });
 
-    test('W11: a throwing guard is reported and skipped', () {
+    test('W11: a throwing guard is reported and cancels the change', () {
       final errors = captureErrors();
+      var broken = false;
       final controller = controllerOf(
         [a],
-        guards: [AlembicGuard((from, to) => throw StateError('broken')), const RootGuard(a)],
-      )..change((_) => [b]);
+        guards: [AlembicGuard((from, to) => broken ? throw StateError('broken') : to), const RootGuard(a)],
+      );
+      broken = true;
+      controller.change((_) => [b]);
 
-      expect(aliases(controller), [Alias.a, Alias.b]);
-      expect(errors, hasLength(2), reason: 'the initial state and the change');
+      expect(aliases(controller), [Alias.a], reason: 'the later guards never fix what the broken one let through');
+      expect(errors.single.exception, isA<StateError>());
+    });
+
+    test('W11: a guard throwing on the initial state fails the constructor', () {
+      final errors = captureErrors();
+
+      expect(
+        () => AlembicController([a], guards: [AlembicGuard((from, to) => throw StateError('broken'))]),
+        throwsArgumentError,
+      );
+      expect(errors.single.exception, isA<StateError>());
     });
 
     test('W11: a throwing change is reported and keeps the state', () {

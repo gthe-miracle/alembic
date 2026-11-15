@@ -113,7 +113,7 @@ final class _DialogRoute extends PopupRoute<Object?> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) => FadeTransition(
-    opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+    opacity: animation.drive(CurveTween(curve: Curves.easeOut)),
     child: child,
   );
 }

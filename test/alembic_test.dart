@@ -81,6 +81,14 @@ void main() {
       expect(aliases(controller), [Alias.a, Alias.b]);
     });
 
+    testWidgets('W26: a page with canPop false keeps the back button', (tester) async {
+      final controller = controllerOf([a, const TestPage(Alias.b, canPop: false)]);
+      await pumpApp(tester, Alembic(controller: controller));
+
+      expect(await back(tester), isTrue);
+      expect(aliases(controller), [Alias.a, Alias.b]);
+    });
+
     testWidgets('onBackButtonPressed replaces the default', (tester) async {
       final controller = controllerOf([a, b, c]);
       NavigatorState? received;

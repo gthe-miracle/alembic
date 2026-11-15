@@ -23,7 +23,7 @@ typedef _Command = (AlembicNavigationState, Map<LocalKey, Object?>) Function(Ale
 ///
 /// Every change goes through one pipeline: the change, then dedupe by key (the last page wins), then the [guards],
 /// then dedupe again. A result that is empty or equal to the current state is rejected; otherwise it is committed and
-/// the listeners are notified once.
+/// the listeners are notified once. A guard that throws is reported and cancels the change.
 ///
 /// A change requested while another one is committed, e.g. from a listener, is queued and applied after it, in order.
 ///
@@ -40,7 +40,8 @@ final class AlembicController extends ChangeNotifier implements ValueListenable<
   /// {@macro alembic_controller}
   ///
   /// The [initial] state is validated by the [guards] right away, so the first frame is already consistent. Throws
-  /// an [ArgumentError] when nothing is left of it. [revalidate] re-runs the guards whenever it notifies.
+  /// an [ArgumentError] when nothing is left of it, e.g. when a guard throws. [revalidate] re-runs the guards whenever
+  /// it notifies.
   AlembicController(
     AlembicNavigationState initial, {
     List<AlembicGuard> guards = const <AlembicGuard>[],
@@ -179,6 +180,8 @@ final class AlembicController extends ChangeNotifier implements ValueListenable<
         next = guard(from, List<AlembicPage>.of(next));
       } on Object catch (error, stackTrace) {
         _report(error, 'running $guard', stackTrace);
+        // A broken rule cancels the change: skipping it would let through what it was there to stop.
+        return from;
       }
     }
     return _dedupe(next);

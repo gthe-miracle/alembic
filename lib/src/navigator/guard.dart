@@ -21,8 +21,9 @@ typedef AlembicGuardCallback = AlembicNavigationState Function(AlembicNavigation
 /// ```
 ///
 /// A guard with state of its own implements this interface. A guard that throws is reported to `FlutterError` and
-/// skipped. To keep the user from closing a page, use `PopScope` or `Page.canPop` instead: a page closed with a swipe
-/// has already left the navigator when the guards see its removal.
+/// cancels the change, so a broken rule never lets through what it was there to stop. To keep the user from closing a
+/// page, use `PopScope` or `Page.canPop` instead: a page closed with a swipe has already left the navigator when the
+/// guards see its removal.
 /// {@endtemplate}
 abstract interface class AlembicGuard {
   /// A guard from a function.

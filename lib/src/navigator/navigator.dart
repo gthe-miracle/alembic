@@ -213,6 +213,8 @@ class _AlembicState extends State<Alembic> with WidgetsBindingObserver {
   /* #endregion */
 
   void _handleChange() {
+    // The navigator also reports a `null` result for a page the controller removed, which nothing collects.
+    _popped.clear();
     final previous = _last;
     final next = _last = widget.controller.state;
     if (!mounted || identical(previous, next)) return;
