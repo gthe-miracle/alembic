@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../cupertino_back/cupertino_back_gesture.dart';
 import 'routes.dart';
@@ -8,14 +8,17 @@ import 'routes.dart';
 /// {@endtemplate}
 class CustomMaterialRoute extends PageRoute<Object?> {
   /// {@macro custom_material_route}
-  CustomMaterialRoute({required AppPage page}) : super(settings: page);
+  new({required AppPage page}) : super(settings: page);
 
   /// {@macro custom_material_route}
   AppPage get page => settings as AppPage;
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) =>
-      page.child;
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) => page.child;
 
   @override
   bool get maintainState => true;

@@ -1,7 +1,8 @@
 import 'package:alembic/alembic.dart';
-import 'package:flutter/cupertino.dart' show CupertinoRouteTransitionMixin;
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart'
+    show CupertinoRouteTransitionMixin;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum Alias implements AlembicAlias {
   a,
@@ -20,8 +21,14 @@ enum Alias implements AlembicAlias {
 
 /// A page showing its name, unless it is given a child.
 base class TestPage extends AlembicPage {
-  const TestPage(this.alias, {Widget? child, super.arguments, super.key, super.canPop, this.tags = const <String>{}})
-    : super(child: child ?? const _Name());
+  const new(
+    this.alias, {
+    Widget? child,
+    super.arguments,
+    super.key,
+    super.canPop,
+    this.tags = const <String>{},
+  }) : super(child: child ?? const _Name());
 
   @override
   final Alias alias;
@@ -34,11 +41,11 @@ base class TestPage extends AlembicPage {
 }
 
 final class DialogTestPage extends TestPage with AlembicDialogPage {
-  const DialogTestPage(super.alias, {super.child});
+  const new(super.alias, {super.child});
 }
 
 final class SheetTestPage extends TestPage with AlembicSheetPage {
-  const SheetTestPage(super.alias, {super.child, this.isScrollControlled = true});
+  const new(super.alias, {super.child, this.isScrollControlled = true});
 
   @override
   final bool isScrollControlled;
@@ -46,14 +53,15 @@ final class SheetTestPage extends TestPage with AlembicSheetPage {
 
 /// A page with the edge swipe of a Cupertino route.
 final class SwipeTestPage extends TestPage {
-  const SwipeTestPage(super.alias, {super.child});
+  const new(super.alias, {super.child});
 
   @override
   Route<Object?> createRoute(BuildContext context) => _SwipeRoute(this);
 }
 
-final class _SwipeRoute extends PageRoute<Object?> with CupertinoRouteTransitionMixin<Object?> {
-  _SwipeRoute(AlembicPage page) : super(settings: page);
+final class _SwipeRoute extends PageRoute<Object?>
+    with CupertinoRouteTransitionMixin<Object?> {
+  new(AlembicPage page) : super(settings: page);
 
   @override
   Widget buildContent(BuildContext context) => (settings as AlembicPage).child;
@@ -66,10 +74,11 @@ final class _SwipeRoute extends PageRoute<Object?> with CupertinoRouteTransition
 }
 
 class _Name extends StatelessWidget {
-  const _Name();
+  const new();
 
   @override
-  Widget build(BuildContext context) => Text((ModalRoute.of(context)!.settings as AlembicPage).name);
+  Widget build(BuildContext context) =>
+      Text((ModalRoute.of(context)!.settings as AlembicPage).name);
 }
 
 /// A controller disposed at the end of the test.
@@ -79,12 +88,19 @@ AlembicController controllerOf(
   Listenable? revalidate,
   AlembicAlias? name,
 }) {
-  final controller = AlembicController(pages, guards: guards, revalidate: revalidate, name: name);
+  final controller = AlembicController(
+    pages,
+    guards: guards,
+    revalidate: revalidate,
+    name: name,
+  );
   addTearDown(controller.dispose);
   return controller;
 }
 
-List<Alias> aliases(AlembicController controller) => [for (final page in controller.state) page.alias as Alias];
+List<Alias> aliases(AlembicController controller) => [
+  for (final page in controller.state) page.alias as Alias,
+];
 
 Future<void> pumpApp(WidgetTester tester, Widget child) async {
   await tester.pumpWidget(MaterialApp(builder: (context, _) => child));
@@ -104,7 +120,8 @@ Future<void> swipeBack(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-/// Collects the errors reported to [FlutterError] until the end of a plain `test`.
+/// Collects the errors reported to [FlutterError] until the end of a plain
+/// `test`.
 List<FlutterErrorDetails> captureErrors() {
   final errors = <FlutterErrorDetails>[];
   final previous = FlutterError.onError;

@@ -1,6 +1,6 @@
 import 'package:alembic/alembic.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'helpers.dart';
 
@@ -18,11 +18,17 @@ Future<AlembicController> _pump(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('a dialog page returns its result to pushForResult', (tester) async {
+  testWidgets('a dialog page returns its result to pushForResult', (
+    tester,
+  ) async {
     final controller = await _pump(tester);
     final result = controller.pushForResult<bool>(dialog);
     await tester.pumpAndSettle();
-    expect(find.text('a'), findsOneWidget, reason: 'the page below stays visible');
+    expect(
+      find.text('a'),
+      findsOneWidget,
+      reason: 'the page below stays visible',
+    );
 
     Navigator.of(tester.element(find.text('dialog'))).pop(true);
     await tester.pumpAndSettle();
@@ -31,7 +37,9 @@ void main() {
     expect(aliases(controller), [Alias.a]);
   });
 
-  testWidgets('a tap on the barrier closes the dialog with null', (tester) async {
+  testWidgets('a tap on the barrier closes the dialog with null', (
+    tester,
+  ) async {
     final controller = await _pump(tester);
     final result = controller.pushForResult<bool>(dialog);
     await tester.pumpAndSettle();
@@ -71,51 +79,72 @@ void main() {
     controller.push(sheet);
     await tester.pumpAndSettle();
 
-    await tester.timedDrag(find.text('sheet'), const Offset(0, 60), const Duration(seconds: 1));
+    await tester.timedDrag(
+      find.text('sheet'),
+      const Offset(0, 60),
+      const Duration(seconds: 1),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('sheet'), findsOneWidget);
     expect(aliases(controller), [Alias.a, Alias.sheet]);
   });
 
-  testWidgets('a list inside a sheet takes the drag and leaves the sheet alone', (tester) async {
-    final controller = await _pump(tester);
-    controller.push(
-      SheetTestPage(
-        Alias.sheet,
-        child: SizedBox(height: 300, child: ListView(children: [for (var i = 0; i < 40; i++) Text('item $i')])),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.drag(find.byType(ListView), const Offset(0, -100));
-    await tester.pumpAndSettle();
-
-    expect(aliases(controller), [Alias.a, Alias.sheet]);
-  });
-
-  testWidgets('a button inside a sheet takes the tap and leaves the sheet alone', (tester) async {
-    final controller = await _pump(tester);
-    var tapped = false;
-    controller.push(
-      SheetTestPage(
-        Alias.sheet,
-        child: GestureDetector(
-          onTap: () => tapped = true,
-          child: const SizedBox(height: 300, width: double.infinity, child: Text('sheet')),
+  testWidgets(
+    'a list inside a sheet takes the drag and leaves the sheet alone',
+    (tester) async {
+      final controller = await _pump(tester);
+      controller.push(
+        SheetTestPage(
+          Alias.sheet,
+          child: SizedBox(
+            height: 300,
+            child: ListView(
+              children: [for (var i = 0; i < 40; i++) Text('item $i')],
+            ),
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
+      );
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('sheet'));
-    await tester.pumpAndSettle();
+      await tester.drag(find.byType(ListView), const Offset(0, -100));
+      await tester.pumpAndSettle();
 
-    expect(tapped, isTrue);
-    expect(aliases(controller), [Alias.a, Alias.sheet]);
-  });
+      expect(aliases(controller), [Alias.a, Alias.sheet]);
+    },
+  );
 
-  testWidgets('a fast downward fling closes a sheet page from anywhere', (tester) async {
+  testWidgets(
+    'a button inside a sheet takes the tap and leaves the sheet alone',
+    (tester) async {
+      final controller = await _pump(tester);
+      var tapped = false;
+      controller.push(
+        SheetTestPage(
+          Alias.sheet,
+          child: GestureDetector(
+            onTap: () => tapped = true,
+            child: const SizedBox(
+              height: 300,
+              width: double.infinity,
+              child: Text('sheet'),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('sheet'));
+      await tester.pumpAndSettle();
+
+      expect(tapped, isTrue);
+      expect(aliases(controller), [Alias.a, Alias.sheet]);
+    },
+  );
+
+  testWidgets('a fast downward fling closes a sheet page from anywhere', (
+    tester,
+  ) async {
     final controller = await _pump(tester);
     controller.push(sheet);
     await tester.pumpAndSettle();
@@ -127,12 +156,16 @@ void main() {
     expect(aliases(controller), [Alias.a]);
   });
 
-  testWidgets('a sheet closed under the finger ignores the rest of the drag', (tester) async {
+  testWidgets('a sheet closed under the finger ignores the rest of the drag', (
+    tester,
+  ) async {
     final controller = await _pump(tester);
     controller.push(sheet);
     await tester.pumpAndSettle();
 
-    final gesture = await tester.startGesture(tester.getCenter(find.text('sheet')));
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('sheet')),
+    );
     await gesture.moveBy(const Offset(0, 40));
     await tester.pump();
     controller.pop();
@@ -145,29 +178,49 @@ void main() {
     expect(aliases(controller), [Alias.a]);
   });
 
-  testWidgets('a sheet is at most 640 wide, centered, and the full height by default', (tester) async {
-    final controller = await _pump(tester);
-    controller.push(const SheetTestPage(Alias.sheet, child: SizedBox.expand(key: Key('tall'))));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'a sheet is at most 640 wide, centered, and the full height by default',
+    (tester) async {
+      final controller = await _pump(tester);
+      controller.push(
+        const SheetTestPage(
+          Alias.sheet,
+          child: SizedBox.expand(key: Key('tall')),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(
-      tester.getRect(find.byKey(const Key('tall'))),
-      const Rect.fromLTRB((800 - 640) / 2, 0, (800 + 640) / 2, 600),
-    );
-  });
+      expect(
+        tester.getRect(find.byKey(const Key('tall'))),
+        const Rect.fromLTRB((800 - 640) / 2, 0, (800 + 640) / 2, 600),
+      );
+    },
+  );
 
-  testWidgets('a sheet without isScrollControlled takes at most 9/16 of the height', (tester) async {
-    final controller = await _pump(tester);
-    controller.push(
-      const SheetTestPage(Alias.sheet, isScrollControlled: false, child: SizedBox.expand(key: Key('tall'))),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'a sheet without isScrollControlled takes at most 9/16 of the height',
+    (tester) async {
+      final controller = await _pump(tester);
+      controller.push(
+        const SheetTestPage(
+          Alias.sheet,
+          isScrollControlled: false,
+          child: SizedBox.expand(key: Key('tall')),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(
-      tester.getRect(find.byKey(const Key('tall'))),
-      const Rect.fromLTRB((800 - 640) / 2, 600 - 600 * 9 / 16, (800 + 640) / 2, 600),
-    );
-  });
+      expect(
+        tester.getRect(find.byKey(const Key('tall'))),
+        const Rect.fromLTRB(
+          (800 - 640) / 2,
+          600 - 600 * 9 / 16,
+          (800 + 640) / 2,
+          600,
+        ),
+      );
+    },
+  );
 
   testWidgets('a screen pushed over a dialog goes under it', (tester) async {
     final controller = await _pump(tester);

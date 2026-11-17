@@ -9,7 +9,9 @@ const b = TestPage(Alias.b);
 const c = TestPage(Alias.c);
 const d = TestPage(Alias.d);
 
-List<Alias> names(AlembicNavigationState state) => [for (final page in state) page.alias as Alias];
+List<Alias> names(AlembicNavigationState state) => [
+  for (final page in state) page.alias as Alias,
+];
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +22,9 @@ void main() {
         [a],
         guards: [
           AlembicGuard(
-            (from, to) => to.any((page) => page.alias == Alias.b) ? [...to.where((p) => p.alias != Alias.b), c] : to,
+            (from, to) => to.any((page) => page.alias == Alias.b)
+                ? [...to.where((p) => p.alias != Alias.b), c]
+                : to,
           ),
         ],
       );
@@ -35,9 +39,15 @@ void main() {
     });
 
     test('W2: the initial state is validated without any widget', () {
-      expect(aliases(controllerOf([b], guards: [const RootGuard(a)])), [Alias.a, Alias.b]);
+      expect(aliases(controllerOf([b], guards: [const RootGuard(a)])), [
+        Alias.a,
+        Alias.b,
+      ]);
       expect(() => AlembicController([]), throwsArgumentError);
-      expect(() => AlembicController([a], guards: [AlembicGuard((from, to) => [])]), throwsArgumentError);
+      expect(
+        () => AlembicController([a], guards: [AlembicGuard((from, to) => [])]),
+        throwsArgumentError,
+      );
     });
 
     test('W3: a guard gets the committed state and the requested one', () {
@@ -57,9 +67,13 @@ void main() {
     });
 
     test('W3: a guard returning `from` cancels the change', () {
-      final controller = controllerOf([a], guards: [AlembicGuard((from, to) => to.length > 2 ? from : to)])
-        ..push(b)
-        ..push(c);
+      final controller =
+          controllerOf(
+              [a],
+              guards: [AlembicGuard((from, to) => to.length > 2 ? from : to)],
+            )
+            ..push(b)
+            ..push(c);
 
       expect(aliases(controller), [Alias.a, Alias.b]);
     });
@@ -85,7 +99,9 @@ void main() {
       final controller = controllerOf([a]);
       var i = 0;
       controller
-        ..addListener(() => controller.push(TestPage(Alias.b, arguments: {'i': i++})))
+        ..addListener(
+          () => controller.push(TestPage(Alias.b, arguments: {'i': i++})),
+        )
         ..push(c);
 
       expect(errors.single.exception, isA<StateError>());
@@ -97,28 +113,40 @@ void main() {
       var broken = false;
       final controller = controllerOf(
         [a],
-        guards: [AlembicGuard((from, to) => broken ? throw StateError('broken') : to), const RootGuard(a)],
+        guards: [
+          AlembicGuard((from, to) => broken ? throw StateError('broken') : to),
+          const RootGuard(a),
+        ],
       );
       broken = true;
       controller.change((_) => [b]);
 
-      expect(aliases(controller), [Alias.a], reason: 'the later guards never fix what the broken one let through');
+      expect(aliases(controller), [
+        Alias.a,
+      ], reason: 'the later guards never fix what the broken one let through');
       expect(errors.single.exception, isA<StateError>());
     });
 
-    test('W11: a guard throwing on the initial state fails the constructor', () {
-      final errors = captureErrors();
+    test(
+      'W11: a guard throwing on the initial state fails the constructor',
+      () {
+        final errors = captureErrors();
 
-      expect(
-        () => AlembicController([a], guards: [AlembicGuard((from, to) => throw StateError('broken'))]),
-        throwsArgumentError,
-      );
-      expect(errors.single.exception, isA<StateError>());
-    });
+        expect(
+          () => AlembicController(
+            [a],
+            guards: [AlembicGuard((from, to) => throw StateError('broken'))],
+          ),
+          throwsArgumentError,
+        );
+        expect(errors.single.exception, isA<StateError>());
+      },
+    );
 
     test('W11: a throwing change is reported and keeps the state', () {
       final errors = captureErrors();
-      final controller = controllerOf([a])..change((_) => throw StateError('broken'));
+      final controller = controllerOf([a])
+        ..change((_) => throw StateError('broken'));
 
       expect(aliases(controller), [Alias.a]);
       expect(errors, hasLength(1));
@@ -133,7 +161,10 @@ void main() {
     });
 
     test('W15: a new instance with the same key is committed', () {
-      final controller = controllerOf([a, const TestPage(Alias.b, child: SizedBox())]);
+      final controller = controllerOf([
+        a,
+        const TestPage(Alias.b, child: SizedBox()),
+      ]);
       const page = TestPage(Alias.b, child: SizedBox(width: 1));
       controller.change((state) => [state.first, page]);
 
@@ -171,7 +202,8 @@ void main() {
 
   group('guards', () {
     test('RootGuard keeps the root at the bottom', () {
-      final controller = controllerOf([b], guards: [const RootGuard(a)])..change((_) => [c, a]);
+      final controller = controllerOf([b], guards: [const RootGuard(a)])
+        ..change((_) => [c, a]);
       expect(aliases(controller), [Alias.a, Alias.c]);
 
       controller.change((_) => []);
@@ -183,7 +215,12 @@ void main() {
         ..push(const DialogTestPage(Alias.dialog))
         ..push(const SheetTestPage(Alias.sheet))
         ..push(b);
-      expect(aliases(controller), [Alias.a, Alias.b, Alias.dialog, Alias.sheet]);
+      expect(aliases(controller), [
+        Alias.a,
+        Alias.b,
+        Alias.dialog,
+        Alias.sheet,
+      ]);
 
       controller.removeTag(AlembicPage.modalTag);
       expect(aliases(controller), [Alias.a, Alias.b]);
@@ -203,7 +240,12 @@ void main() {
       var dropB = false;
       final controller = controllerOf(
         [a, b],
-        guards: [AlembicGuard((from, to) => dropB ? to.where((page) => page.alias != Alias.b).toList() : to)],
+        guards: [
+          AlembicGuard(
+            (from, to) =>
+                dropB ? to.where((page) => page.alias != Alias.b).toList() : to,
+          ),
+        ],
       )..push(c);
       dropB = true;
       controller.reset();
@@ -219,10 +261,19 @@ void main() {
         const TestPage(Alias.b, arguments: {'id': 2}),
         d,
       ])..popUntil(Alias.b);
-      expect(controller.state.map((page) => '$page'), ['a', 'b?id=1', 'c', 'b?id=2']);
+      expect(controller.state.map((page) => '$page'), [
+        'a',
+        'b?id=1',
+        'c',
+        'b?id=2',
+      ]);
 
       controller.popUntil(Alias.e);
-      expect(controller.state, hasLength(4), reason: 'no page with the alias: nothing changes');
+      expect(
+        controller.state,
+        hasLength(4),
+        reason: 'no page with the alias: nothing changes',
+      );
     });
   });
 
@@ -260,14 +311,22 @@ void main() {
     });
 
     test('a push rejected by a guard completes with null', () async {
-      final controller = controllerOf([a], guards: [AlembicGuard((from, to) => to.length > 1 ? from : to)]);
+      final controller = controllerOf(
+        [a],
+        guards: [AlembicGuard((from, to) => to.length > 1 ? from : to)],
+      );
 
       expect(await controller.pushForResult<bool>(b), isNull);
     });
 
     test('a pop cancelled by a guard drops its result', () async {
       var locked = true;
-      final controller = controllerOf([a], guards: [AlembicGuard((from, to) => locked && from.length > 1 ? from : to)]);
+      final controller = controllerOf(
+        [a],
+        guards: [
+          AlembicGuard((from, to) => locked && from.length > 1 ? from : to),
+        ],
+      );
       final result = controller.pushForResult<bool>(b);
       controller.pop(true);
       expect(aliases(controller), [Alias.a, Alias.b]);
@@ -277,31 +336,37 @@ void main() {
       expect(await result, isNull);
     });
 
-    test('pushing for a result again completes the previous future with null', () async {
-      final controller = controllerOf([a]);
-      final first = controller.pushForResult<bool>(b);
-      final second = controller.pushForResult<bool>(b);
-      controller.pop(true);
+    test(
+      'pushing for a result again completes the previous future with null',
+      () async {
+        final controller = controllerOf([a]);
+        final first = controller.pushForResult<bool>(b);
+        final second = controller.pushForResult<bool>(b);
+        controller.pop(true);
 
-      expect(await first, isNull);
-      expect(await second, isTrue);
-    });
+        expect(await first, isNull);
+        expect(await second, isTrue);
+      },
+    );
 
-    test('a push for a result from a listener waits for its turn in the queue', () async {
-      final controller = controllerOf([a]);
-      Future<bool?>? result;
-      controller
-        ..addListener(() {
-          if (controller.state.last.alias != Alias.b) return;
-          controller.push(c);
-          result = controller.pushForResult<bool>(d);
-        })
-        ..push(b);
-      expect(aliases(controller), [Alias.a, Alias.b, Alias.c, Alias.d]);
+    test(
+      'a push for a result from a listener waits for its turn in the queue',
+      () async {
+        final controller = controllerOf([a]);
+        Future<bool?>? result;
+        controller
+          ..addListener(() {
+            if (controller.state.last.alias != Alias.b) return;
+            controller.push(c);
+            result = controller.pushForResult<bool>(d);
+          })
+          ..push(b);
+        expect(aliases(controller), [Alias.a, Alias.b, Alias.c, Alias.d]);
 
-      controller.pop(true);
-      expect(await result, isTrue);
-    });
+        controller.pop(true);
+        expect(await result, isTrue);
+      },
+    );
 
     test('dispose completes with null', () async {
       final controller = controllerOf([a]);

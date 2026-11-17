@@ -1,18 +1,24 @@
-## 0.7.0
+## 1.0.0
 
-- **Breaking:** a guard that throws now cancels the change instead of being skipped, so a broken rule, e.g. an auth
-  guard, never lets through what it was there to stop. The error is still reported to `FlutterError`. A guard that
-  throws on the initial state makes the constructor throw its `ArgumentError`
+- **Breaking:** requires Flutter 3.47.0 and Dart 3.13, up from Flutter 3.35.0 and Dart 3.9
 - **Breaking:** `AlembicSheetPage` is at most 640 wide and centered, as in Material 3, instead of spanning the width on
   tablets, desktop and in landscape. Its child gets a loose width, so a child that does not fill it, e.g. a `Column`
   without `CrossAxisAlignment.stretch`, is centered at its own width, on phones too. Wrap it in
   `SizedBox(width: double.infinity)` to keep it full width
+- **Breaking:** a guard that throws now cancels the change instead of being skipped, so a broken rule, e.g. an auth
+  guard, never lets through what it was there to stop. The error is still reported to `FlutterError`. A guard that
+  throws on the initial state makes the constructor throw its `ArgumentError`
 - The default key of a page asserts in debug mode that every argument has a `toString()` of its own: two values
   printed as `Instance of 'User'` gave one key, and the pages silently became one screen. Override `key` for such pages
 - `AlembicPage` takes `canPop` and `onPopInvoked` and passes them to `Page`
 - Fixed: the Alembic kept an entry for every page removed through the controller, for as long as it was mounted
 - Fixed: the route of `AlembicDialogPage` added a status listener to its animation on every build
-- CI tests the minimum Flutter (3.35.0) and the latest stable
+- The tests and the example import [`material_ui`](https://pub.dev/packages/material_ui) and
+  [`cupertino_ui`](https://pub.dev/packages/cupertino_ui) instead of `package:flutter/material.dart` and
+  `package:flutter/cupertino.dart`. Material and Cupertino were decoupled from the Flutter SDK, and the copies in the
+  SDK are frozen and scheduled for removal ([flutter/flutter#184093](https://github.com/flutter/flutter/issues/184093),
+  [flutter/flutter#172942](https://github.com/flutter/flutter/issues/172942))
+- CI tests the minimum Flutter (3.47.0) and the latest stable
 
 ## 0.6.1
 

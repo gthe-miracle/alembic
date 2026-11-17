@@ -7,27 +7,36 @@ import 'package:flutter/scheduler.dart';
 import 'guard.dart';
 import 'page.dart';
 
-/// A change of the navigation state: it receives a mutable copy of the state and returns the requested one.
+/// A change of the navigation state: it receives a mutable copy of the state
+/// and returns the requested one.
 ///
 /// ```dart
 /// controller.change((state) => [...state, const SettingsPage()]);
 /// controller.change((state) => state..removeLast());
 /// ```
-typedef AlembicChange = AlembicNavigationState Function(AlembicNavigationState state);
+typedef AlembicChange = AlembicNavigationState Function(
+  AlembicNavigationState state,
+);
 
 /// A queued change, with the results of the pages it removes.
-typedef _Command = (AlembicNavigationState, Map<LocalKey, Object?>) Function(AlembicNavigationState state);
+typedef _Command = (AlembicNavigationState, Map<LocalKey, Object?>) Function(
+  AlembicNavigationState state,
+);
 
 /// {@template alembic_controller}
 /// The owner of the navigation state.
 ///
-/// Every change goes through one pipeline: the change, then dedupe by key (the last page wins), then the [guards],
-/// then dedupe again. A result that is empty or equal to the current state is rejected; otherwise it is committed and
-/// the listeners are notified once. A guard that throws is reported and cancels the change.
+/// Every change goes through one pipeline: the change, then dedupe by key (the
+/// last page wins), then the [guards], then dedupe again. A result that is
+/// empty or equal to the current state is rejected; otherwise it is committed
+/// and the listeners are notified once. A guard that throws is reported and
+/// cancels the change.
 ///
-/// A change requested while another one is committed, e.g. from a listener, is queued and applied after it, in order.
+/// A change requested while another one is committed, e.g. from a listener, is
+/// queued and applied after it, in order.
 ///
-/// The controller knows no widgets, so it can be created, changed and tested without any. Render it with `Alembic`.
+/// The controller knows no widgets, so it can be created, changed and tested
+/// without any. Render it with `Alembic`.
 /// ```dart
 /// final controller = AlembicController(
 ///   [const HomePage()],
@@ -36,13 +45,15 @@ typedef _Command = (AlembicNavigationState, Map<LocalKey, Object?>) Function(Ale
 /// );
 /// ```
 /// {@endtemplate}
-final class AlembicController extends ChangeNotifier implements ValueListenable<AlembicNavigationState> {
+final class AlembicController extends ChangeNotifier
+    implements ValueListenable<AlembicNavigationState> {
   /// {@macro alembic_controller}
   ///
-  /// The [initial] state is validated by the [guards] right away, so the first frame is already consistent. Throws
-  /// an [ArgumentError] when nothing is left of it, e.g. when a guard throws. [revalidate] re-runs the guards whenever
-  /// it notifies.
-  AlembicController(
+  /// The [initial] state is validated by the [guards] right away, so the first
+  /// frame is already consistent. Throws an [ArgumentError] when nothing is
+  /// left of it, e.g. when a guard throws. [revalidate] re-runs the guards
+  /// whenever it notifies.
+  new(
     AlembicNavigationState initial, {
     List<AlembicGuard> guards = const <AlembicGuard>[],
     Listenable? revalidate,
@@ -50,19 +61,29 @@ final class AlembicController extends ChangeNotifier implements ValueListenable<
   }) : guards = List<AlembicGuard>.unmodifiable(guards),
        _initial = List<AlembicPage>.unmodifiable(initial),
        _revalidate = revalidate {
-    final state = _validate(const <AlembicPage>[], List<AlembicPage>.of(initial));
-    if (state.isEmpty) throw ArgumentError.value(initial, 'initial', 'Nothing is left of the initial state');
+    final state = _validate(
+      const <AlembicPage>[],
+      List<AlembicPage>.of(initial),
+    );
+    if (state.isEmpty)
+      throw ArgumentError.value(
+        initial,
+        'initial',
+        'Nothing is left of the initial state',
+      );
     _state = UnmodifiableListView<AlembicPage>(state);
     revalidate?.addListener(this.revalidate);
   }
 
-  /// The most changes committed at once: a listener changing the state on every change is stopped there.
+  /// The most changes committed at once: a listener changing the state on every
+  /// change is stopped there.
   static const int _maxCommands = 64;
 
   /// Tells controllers apart, e.g. in an `AlembicNotification`.
   final AlembicAlias? name;
 
-  /// The rules applied to every change, in order: each guard receives the result of the previous one.
+  /// The rules applied to every change, in order: each guard receives the
+  /// result of the previous one.
   final List<AlembicGuard> guards;
 
   final AlembicNavigationState _initial;
@@ -70,7 +91,8 @@ final class AlembicController extends ChangeNotifier implements ValueListenable<
   final Queue<_Command> _queue = Queue<_Command>();
 
   /// The futures of [pushForResult], by page key.
-  final Map<LocalKey, Completer<Object?>> _waiting = <LocalKey, Completer<Object?>>{};
+  final Map<LocalKey, Completer<Object?>> _waiting =
+      <LocalKey, Completer<Object?>>{};
 
   AlembicNavigationState _state = const <AlembicPage>[];
   bool _draining = false;
@@ -84,17 +106,23 @@ final class AlembicController extends ChangeNotifier implements ValueListenable<
   AlembicNavigationState get value => _state;
 
   /// Rewrites the state with [fn]. Every other method is a shortcut for it.
-  void change(AlembicChange fn) => _run((state) => (fn(state), const <LocalKey, Object?>{}));
+  void change(AlembicChange fn) =>
+      _run((state) => (fn(state), const <LocalKey, Object?>{}));
 
-  /// Adds [page] on top. A page with the same key that is already in the state moves to the top.
+  /// Adds [page] on top. A page with the same key that is already in the state
+  /// moves to the top.
   void push(AlembicPage page) => change((state) => state..add(page));
 
   /// Adds [page] on top and completes when it leaves the state.
   ///
-  /// Completes with the result given to [pop], [remove] or `Navigator.pop(context, result)`, and with `null` when the
-  /// page is closed in another way, rejected by a guard, pushed for a result again or the controller is disposed.
+  /// Completes with the result given to [pop], [remove] or
+  /// `Navigator.pop(context, result)`, and with `null` when the page is closed
+  /// in another way, rejected by a guard, pushed for a result again or the
+  /// controller is disposed.
   /// ```dart
-  /// final confirmed = await controller.pushForResult<bool>(const ConfirmPage());
+  /// final confirmed = await controller.pushForResult<bool>(
+  ///   const ConfirmPage(),
+  /// );
   /// ```
   Future<T?> pushForResult<T extends Object?>(AlembicPage page) {
     _waiting.remove(page.key)?.complete();
@@ -104,32 +132,41 @@ final class AlembicController extends ChangeNotifier implements ValueListenable<
     return completer.future.then((result) => result is T ? result : null);
   }
 
-  /// Removes the visible page, unless it is the only one, and completes its [pushForResult] with [result].
+  /// Removes the visible page, unless it is the only one, and completes its
+  /// [pushForResult] with [result].
   ///
-  /// It changes the state only: a route opened imperatively on top, e.g. with `showDialog`, stays. To close what the
-  /// user sees, like the back button does, use `Navigator.maybePop(context)`.
+  /// It changes the state only: a route opened imperatively on top, e.g. with
+  /// `showDialog`, stays. To close what the user sees, like the back button
+  /// does, use `Navigator.maybePop(context)`.
   void pop([Object? result]) => _run((state) {
     if (state.length < 2) return (state, const <LocalKey, Object?>{});
     final page = state.removeLast();
     return (state, {page.key: result});
   });
 
-  /// Removes the page with the key of [page] and completes its [pushForResult] with [result].
+  /// Removes the page with the key of [page] and completes its [pushForResult]
+  /// with [result].
   void remove(AlembicPage page, [Object? result]) {
     final key = page.key;
-    _run((state) => (state..removeWhere((other) => other.key == key), {key: result}));
+    _run(
+      (state) =>
+          (state..removeWhere((other) => other.key == key), {key: result}),
+    );
   }
 
-  /// Removes the pages above the topmost page with [alias]. Does nothing when there is none.
+  /// Removes the pages above the topmost page with [alias]. Does nothing when
+  /// there is none.
   void popUntil(AlembicAlias alias) => change((state) {
     final index = state.lastIndexWhere((page) => page.alias == alias);
     return index < 0 ? state : state.sublist(0, index + 1);
   });
 
   /// Removes the pages marked with [tag], see [AlembicPage.tags].
-  void removeTag(String tag) => change((state) => state..removeWhere((page) => page.tags.contains(tag)));
+  void removeTag(String tag) =>
+      change((state) => state..removeWhere((page) => page.tags.contains(tag)));
 
-  /// Returns to the initial state given to the constructor, validated by the guards again.
+  /// Returns to the initial state given to the constructor, validated by the
+  /// guards again.
   void reset() => change((_) => List<AlembicPage>.of(_initial));
 
   /// Runs the guards on the current state again.
@@ -143,7 +180,12 @@ final class AlembicController extends ChangeNotifier implements ValueListenable<
     try {
       for (var committed = 0; _queue.isNotEmpty && !_disposed; committed++) {
         if (committed == _maxCommands) {
-          _report(StateError('More than $_maxCommands changes in a row; the rest are dropped'), 'draining the queue');
+          _report(
+            StateError(
+              'More than $_maxCommands changes in a row; the rest are dropped',
+            ),
+            'draining the queue',
+          );
           break;
         }
         _commit(_queue.removeFirst());
@@ -166,44 +208,63 @@ final class AlembicController extends ChangeNotifier implements ValueListenable<
     final (requested, results) = change;
     final next = _validate(previous, requested);
     if (_disposed) return;
-    if (next.isEmpty) return _report(StateError('The navigation state cannot be empty'), 'committing $requested');
+    if (next.isEmpty)
+      return _report(
+        StateError('The navigation state cannot be empty'),
+        'committing $requested',
+      );
     if (listEquals(previous, next)) return;
     _state = UnmodifiableListView<AlembicPage>(List<AlembicPage>.of(next));
     _complete(previous, results);
     _notify();
   }
 
-  AlembicNavigationState _validate(AlembicNavigationState from, AlembicNavigationState to) {
+  AlembicNavigationState _validate(
+    AlembicNavigationState from,
+    AlembicNavigationState to,
+  ) {
     var next = _dedupe(to);
     for (final guard in guards) {
       try {
         next = guard(from, List<AlembicPage>.of(next));
       } on Object catch (error, stackTrace) {
         _report(error, 'running $guard', stackTrace);
-        // A broken rule cancels the change: skipping it would let through what it was there to stop.
+        // A broken rule cancels the change: skipping it would let through what
+        // it was there to stop.
         return from;
       }
     }
     return _dedupe(next);
   }
 
-  /// Keeps the last page of every key, so pushing a page that is already in the state moves it to the top.
+  /// Keeps the last page of every key, so pushing a page that is already in the
+  /// state moves it to the top.
   static AlembicNavigationState _dedupe(AlembicNavigationState state) {
     final keys = <LocalKey>{};
-    final unique = state.reversed.where((page) => keys.add(page.key)).toList().reversed.toList();
+    final unique = state.reversed
+        .where((page) => keys.add(page.key))
+        .toList()
+        .reversed
+        .toList();
     return unique.length == state.length ? state : unique;
   }
 
-  /// Completes the futures of the pages that have left the state with the results of the change.
-  void _complete(AlembicNavigationState previous, Map<LocalKey, Object?> results) {
+  /// Completes the futures of the pages that have left the state with the
+  /// results of the change.
+  void _complete(
+    AlembicNavigationState previous,
+    Map<LocalKey, Object?> results,
+  ) {
     if (_waiting.isEmpty) return;
     final keys = {for (final page in _state) page.key};
     for (final page in previous) {
-      if (!keys.contains(page.key)) _waiting.remove(page.key)?.complete(results[page.key]);
+      if (!keys.contains(page.key))
+        _waiting.remove(page.key)?.complete(results[page.key]);
     }
   }
 
-  /// Completes with `null` the futures of the pages that never made it into the state, once the queue is drained.
+  /// Completes with `null` the futures of the pages that never made it into the
+  /// state, once the queue is drained.
   void _settle() {
     if (_waiting.isEmpty) return;
     final keys = {for (final page in _state) page.key};
@@ -215,8 +276,11 @@ final class AlembicController extends ChangeNotifier implements ValueListenable<
 
   void _notify() {
     if (!hasListeners) return;
-    // During the build, marking an ancestor of the building widget dirty throws: notify after the frame.
-    if (SchedulerBinding.instance.schedulerPhase != SchedulerPhase.persistentCallbacks) return notifyListeners();
+    // During the build, marking an ancestor of the building widget dirty
+    // throws: notify after the frame.
+    if (SchedulerBinding.instance.schedulerPhase !=
+        SchedulerPhase.persistentCallbacks)
+      return notifyListeners();
     if (_notifyScheduled) return;
     _notifyScheduled = true;
     SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -225,14 +289,15 @@ final class AlembicController extends ChangeNotifier implements ValueListenable<
     }, debugLabel: 'AlembicController.notifyListeners');
   }
 
-  void _report(Object error, String action, [StackTrace? stackTrace]) => FlutterError.reportError(
-    FlutterErrorDetails(
-      exception: error,
-      stack: stackTrace ?? StackTrace.current,
-      library: 'alembic',
-      context: ErrorDescription('while $action in $this'),
-    ),
-  );
+  void _report(Object error, String action, [StackTrace? stackTrace]) =>
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace ?? StackTrace.current,
+          library: 'alembic',
+          context: ErrorDescription('while $action in $this'),
+        ),
+      );
 
   @override
   void dispose() {
@@ -249,5 +314,6 @@ final class AlembicController extends ChangeNotifier implements ValueListenable<
   }
 
   @override
-  String toString() => 'AlembicController(${name == null ? '' : '${name!.alias}: '}${_state.join(' > ')})';
+  String toString() =>
+      'AlembicController(${name == null ? '' : '${name!.alias}: '}${_state.join(' > ')})';
 }

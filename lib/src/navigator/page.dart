@@ -6,16 +6,19 @@ typedef AlembicNavigationState = List<AlembicPage>;
 /// {@template alembic_page}
 /// A screen of the navigation state.
 ///
-/// A page is an immutable value that is also the [Page] given to the [Navigator], so the navigator matches the pages
-/// of two states by their [key] and keeps the route, and its state, of a page that stays.
+/// A page is an immutable value that is also the [Page] given to the
+/// [Navigator], so the navigator matches the pages of two states by their [key]
+/// and keeps the route, and its state, of a page that stays.
 ///
-/// Subclasses implement [alias] and [createRoute], usually once in a shared sealed base page:
+/// Subclasses implement [alias] and [createRoute], usually once in a shared
+/// sealed base page:
 /// ```dart
 /// sealed class AppPage extends AlembicPage {
 ///   const AppPage({required super.child, super.arguments, super.key});
 ///
 ///   @override
-///   Route<Object?> createRoute(BuildContext context) => AlembicPageRoute(this);
+///   Route<Object?> createRoute(BuildContext context) =>
+///       AlembicPageRoute(this);
 /// }
 ///
 /// final class HomePage extends AppPage {
@@ -26,16 +29,17 @@ typedef AlembicNavigationState = List<AlembicPage>;
 /// }
 /// ```
 ///
-/// The route must be page-based: it reads the child of its current page, `(settings as AlembicPage).child`, on every
-/// build instead of capturing it once. Otherwise a new instance of a page with the same key does not reach the
-/// screen. [AlembicPageRoute] and the modal pages are page-based.
+/// The route must be page-based: it reads the child of its current page,
+/// `(settings as AlembicPage).child`, on every build instead of capturing it
+/// once. Otherwise a new instance of a page with the same key does not reach
+/// the screen. [AlembicPageRoute] and the modal pages are page-based.
 ///
 /// Pages compare by identity. The controller identifies them by [key].
 /// {@endtemplate}
 @immutable
 abstract base class AlembicPage extends Page<Object?> {
   /// {@macro alembic_page}
-  const AlembicPage({
+  const new({
     required this.child,
     Map<String, Object?>? super.arguments,
     super.key,
@@ -44,9 +48,11 @@ abstract base class AlembicPage extends Page<Object?> {
     super.onPopInvoked,
   });
 
-  /// The tag of the pages that cover the screen with a barrier: dialogs and sheets.
+  /// The tag of the pages that cover the screen with a barrier: dialogs and
+  /// sheets.
   ///
-  /// `controller.removeTag(AlembicPage.modalTag)` closes all of them, and [ModalGuard] keeps them above the screens.
+  /// `controller.removeTag(AlembicPage.modalTag)` closes all of them, and
+  /// [ModalGuard] keeps them above the screens.
   static const String modalTag = 'modal';
 
   /// The content of the page.
@@ -55,7 +61,8 @@ abstract base class AlembicPage extends Page<Object?> {
   /// The alias of the page, usually an enum value. The [name] comes from it.
   AlembicAlias get alias;
 
-  /// Marks used to address groups of pages, e.g. `controller.removeTag('checkout')`.
+  /// Marks used to address groups of pages, e.g.
+  /// `controller.removeTag('checkout')`.
   Set<String> get tags => const <String>{};
 
   @override
@@ -67,13 +74,17 @@ abstract base class AlembicPage extends Page<Object?> {
     _ => const <String, Object?>{},
   };
 
-  /// The identity of the page in the state; keys must be unique within one state.
+  /// The identity of the page in the state; keys must be unique within one
+  /// state.
   ///
-  /// Defaults to the key given to the constructor, otherwise to `name`, or `name?a=1&b` with [arguments] (`b` has a
-  /// `null` value). `%`, `&`, `=` and `?` are escaped, so a separator inside a value never produces another key. The
-  /// values are written with their `toString()`; a value without one of its own fails an assertion in debug mode.
+  /// Defaults to the key given to the constructor, otherwise to `name`, or
+  /// `name?a=1&b` with [arguments] (`b` has a `null` value). `%`, `&`, `=` and
+  /// `?` are escaped, so a separator inside a value never produces another key.
+  /// The values are written with their `toString()`; a value without one of its
+  /// own fails an assertion in debug mode.
   ///
-  /// A page that keeps its parameters in fields must override it, otherwise all its instances are one screen:
+  /// A page that keeps its parameters in fields must override it, otherwise all
+  /// its instances are one screen:
   /// ```dart
   /// @override
   /// LocalKey get key => ValueKey<String>('product/$id');
@@ -87,7 +98,8 @@ abstract base class AlembicPage extends Page<Object?> {
         .map(
           (entry) => switch (entry.value) {
             null => _escape(entry.key),
-            final Object value => '${_escape(entry.key)}=${_escape(_describe(entry.key, value))}',
+            final Object value =>
+              '${_escape(entry.key)}=${_escape(_describe(entry.key, value))}',
           },
         )
         .join('&');
@@ -104,8 +116,11 @@ abstract base class AlembicPage extends Page<Object?> {
     return text;
   }
 
-  static String _escape(String value) =>
-      value.replaceAll('%', '%25').replaceAll('&', '%26').replaceAll('=', '%3D').replaceAll('?', '%3F');
+  static String _escape(String value) => value
+      .replaceAll('%', '%25')
+      .replaceAll('&', '%26')
+      .replaceAll('=', '%3D')
+      .replaceAll('?', '%3F');
 
   @override
   String toString() => switch (key) {
@@ -117,17 +132,20 @@ abstract base class AlembicPage extends Page<Object?> {
 /// {@template alembic_page_route}
 /// A page-based route for an [AlembicPage], built on widgets only.
 ///
-/// Every build reads the child of the current page, so replacing a page with a new instance under the same key
-/// updates the screen and keeps the state of the route.
+/// Every build reads the child of the current page, so replacing a page with a
+/// new instance under the same key updates the screen and keeps the state of
+/// the route.
 /// ```dart
 /// @override
 /// Route<Object?> createRoute(BuildContext context) => AlembicPageRoute(this);
 /// ```
 ///
-/// For the transitions of Material or Cupertino, use their page-based mixins in the app. Material takes the transition
-/// from `ThemeData.pageTransitionsTheme`:
+/// For the transitions of Material or Cupertino, use their page-based mixins in
+/// the app. Material takes the transition from
+/// `ThemeData.pageTransitionsTheme`:
 /// ```dart
-/// final class AppPageRoute extends PageRoute<Object?> with MaterialRouteTransitionMixin<Object?> {
+/// final class AppPageRoute extends PageRoute<Object?>
+///     with MaterialRouteTransitionMixin<Object?> {
 ///   AppPageRoute(AppPage page) : super(settings: page);
 ///
 ///   @override
@@ -138,10 +156,12 @@ abstract base class AlembicPage extends Page<Object?> {
 /// }
 /// ```
 ///
-/// Cupertino slides from the right, with the swipe-back gesture, on every platform. It also needs a `title`, which a
-/// `CupertinoNavigationBar` shows on the back button of the next page:
+/// Cupertino slides from the right, with the swipe-back gesture, on every
+/// platform. It also needs a `title`, which a `CupertinoNavigationBar` shows on
+/// the back button of the next page:
 /// ```dart
-/// final class AppPageRoute extends PageRoute<Object?> with CupertinoRouteTransitionMixin<Object?> {
+/// final class AppPageRoute extends PageRoute<Object?>
+///     with CupertinoRouteTransitionMixin<Object?> {
 ///   AppPageRoute(AppPage page) : super(settings: page);
 ///
 ///   @override
@@ -157,7 +177,7 @@ abstract base class AlembicPage extends Page<Object?> {
 /// {@endtemplate}
 final class AlembicPageRoute extends PageRoute<Object?> {
   /// {@macro alembic_page_route}
-  AlembicPageRoute(
+  new(
     AlembicPage page, {
     this.transitionDuration = const Duration(milliseconds: 300),
     this.transitionsBuilder = _fade,
@@ -180,8 +200,11 @@ final class AlembicPageRoute extends PageRoute<Object?> {
   String? get barrierLabel => null;
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) =>
-      (settings as AlembicPage).child;
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) => (settings as AlembicPage).child;
 
   @override
   Widget buildTransitions(
@@ -191,11 +214,16 @@ final class AlembicPageRoute extends PageRoute<Object?> {
     Widget child,
   ) => transitionsBuilder(context, animation, secondaryAnimation, child);
 
-  static Widget _fade(BuildContext context, Animation<double> animation, Animation<double> _, Widget child) =>
-      FadeTransition(opacity: animation, child: child);
+  static Widget _fade(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> _,
+    Widget child,
+  ) => FadeTransition(opacity: animation, child: child);
 }
 
-/// The alias of a page, usually an enum value. Aliases must be unique, since the page name and key come from them.
+/// The alias of a page, usually an enum value. Aliases must be unique, since
+/// the page name and key come from them.
 ///
 /// ```dart
 /// enum Routes implements AlembicAlias {

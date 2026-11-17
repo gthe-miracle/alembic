@@ -1,5 +1,5 @@
 import 'package:alembic/alembic.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../common/routes/routes.dart';
 import '../../common/widget/app.dart';
@@ -9,7 +9,7 @@ import '../../common/widget/app.dart';
 /// {@endtemplate}
 class HomeScreen extends StatelessWidget {
   /// {@macro home_screen}
-  const HomeScreen({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -17,18 +17,27 @@ class HomeScreen extends StatelessWidget {
       title: const Text('Home'),
       actions: [
         IconButton(
-          icon: Icon(Theme.of(context).brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode),
+          icon: Icon(
+            Theme.of(context).brightness == Brightness.dark
+                ? Icons.light_mode
+                : Icons.dark_mode,
+          ),
           onPressed: () => App.toggleThemeOf(context),
         ),
         IconButton(
           icon: const Icon(Icons.settings),
-          onPressed: () => context.alembic.push(SettingsScopePage(data: 'Data from home')),
+          onPressed: () =>
+              context.alembic.push(SettingsScopePage(data: 'Data from home')),
         ),
       ],
     ),
     // Alembic.stackOf rebuilds this text on every change of the root Alembic.
     body: SafeArea(
-      child: Center(child: Text('Pages: ${Alembic.stackOf(context).map((page) => page.name).join(' > ')}')),
+      child: Center(
+        child: Text(
+          'Pages: ${Alembic.stackOf(context).map((page) => page.name).join(' > ')}',
+        ),
+      ),
     ),
   );
 }

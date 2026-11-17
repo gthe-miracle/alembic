@@ -1,5 +1,5 @@
 import 'package:alembic/alembic.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../common/routes/routes.dart';
 import '../../common/widget/app.dart';
@@ -9,7 +9,7 @@ import '../../common/widget/app.dart';
 /// {@endtemplate}
 class SettingsScreen extends StatefulWidget {
   /// {@macro settings_screen}
-  const SettingsScreen({required this.data, super.key});
+  const new({required this.data, super.key});
 
   final String data;
 
@@ -21,7 +21,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool? _result;
 
   Future<void> _openDialog() async {
-    final result = await context.alembic.pushForResult<bool>(const SettingsDialogPage());
+    final result = await context.alembic.pushForResult<bool>(
+      const SettingsDialogPage(),
+    );
     if (mounted) setState(() => _result = result);
   }
 
@@ -43,8 +45,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Text('data: ${widget.data}'),
             Text('Dialog result: $_result'),
-            TextButton(onPressed: _openDialog, child: const Text('Open dialog')),
-            TextButton(onPressed: () => context.alembic.push(const AboutSheetPage()), child: const Text('Open sheet')),
+            TextButton(
+              onPressed: _openDialog,
+              child: const Text('Open dialog'),
+            ),
+            TextButton(
+              onPressed: () => context.alembic.push(const AboutSheetPage()),
+              child: const Text('Open sheet'),
+            ),
             TextButton(
               onPressed: () => context.alembic.push(const DraggableSheetPage()),
               child: const Text('Open draggable sheet'),
@@ -64,14 +72,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 /// SettingsScreenDetail widget.
 /// {@endtemplate}
 class SettingsScreenDetail extends StatelessWidget {
-  const SettingsScreenDetail({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: Colors.cyan,
     appBar: AppBar(
       // The settings Alembic has a single page: leave it through the root one.
-      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.alembic.pop()),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => context.alembic.pop(),
+      ),
       title: const Text('Settings'),
     ),
     body: SafeArea(
@@ -80,7 +91,11 @@ class SettingsScreenDetail extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text('Detail'),
-            TextButton(onPressed: () => App.controllerOf(context).popUntil(AppRoutes.home), child: const Text('Pop')),
+            TextButton(
+              onPressed: () =>
+                  App.controllerOf(context).popUntil(AppRoutes.home),
+              child: const Text('Pop'),
+            ),
           ],
         ),
       ),

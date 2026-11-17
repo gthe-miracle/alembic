@@ -1,8 +1,7 @@
 import 'package:alembic/alembic.dart';
-// ignore: unnecessary_import
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:logbook/logbook.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../routes/routes.dart';
 
@@ -11,16 +10,19 @@ import '../routes/routes.dart';
 /// {@endtemplate}
 class App extends StatefulWidget {
   /// {@macro app}
-  const App({super.key});
+  const new({super.key});
 
   /// The controller of the root Alembic, e.g. to leave a nested one.
   static AlembicController controllerOf(BuildContext context) =>
       context.findAncestorStateOfType<_AppState>()!._controller;
 
-  /// Switches between light and dark theme, to compare page transitions in both.
+  /// Switches between light and dark theme, to compare page transitions in
+  /// both.
   static void toggleThemeOf(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    context.findAncestorStateOfType<_AppState>()?.setThemeMode(dark ? ThemeMode.light : ThemeMode.dark);
+    context.findAncestorStateOfType<_AppState>()?.setThemeMode(
+      dark ? ThemeMode.light : ThemeMode.dark,
+    );
   }
 
   @override
@@ -65,12 +67,16 @@ class _AppState extends State<App> {
     theme: ThemeData(
       brightness: Brightness.light,
       pageTransitionsTheme: _transitions,
-      textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: Colors.black)),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: Colors.black),
+      ),
     ),
     darkTheme: ThemeData(
       brightness: Brightness.dark,
       pageTransitionsTheme: _transitions,
-      textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: Colors.white)),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: Colors.white),
+      ),
     ),
     themeMode: _themeMode,
     builder: (context, _) => Alembic(controller: _controller, listener: _log),

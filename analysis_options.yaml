@@ -1,7 +1,7 @@
 include: package:flutter_lints/flutter.yaml
 
 formatter:
-  page_width: 120
+  page_width: 80
 
 analyzer:
   exclude:
@@ -49,15 +49,13 @@ analyzer:
   errors:
     # Allow having TODOs in the code
     todo: ignore
+    fixme: warning
 
     # Info
     directives_ordering: info
     always_declare_return_types: info
 
     # Warning
-    unsafe_html: warning
-    missing_return: warning
-    missing_required_param: warning
     no_logic_in_create_state: warning
     empty_catches: warning
 
@@ -66,8 +64,7 @@ analyzer:
     avoid_slow_async_io: error
     avoid_types_as_parameter_names: error
     valid_regexps: error
-    always_require_non_null_named_parameters: error
-    avoid_positional_boolean_parameters: ignore
+    experimental_member_use: ignore
 
 linter:
   rules:
@@ -83,7 +80,6 @@ linter:
     prefer_final_locals: false
     avoid_escaping_inner_quotes: false
     curly_braces_in_flow_control_structures: false
-    one_member_abstracts: false
 
     # Enabled
     use_named_constants: true
@@ -120,7 +116,7 @@ linter:
     missing_whitespace_between_adjacent_strings: true
     no_adjacent_strings_in_list: true
     no_logic_in_create_state: true
-    no_runtimeType_toString: true
+    no_runtimetype_tostring: true
     only_throw_errors: true
     overridden_fields: true
     package_names: true
@@ -166,7 +162,6 @@ linter:
     annotate_overrides: true
     avoid_empty_else: true
     avoid_init_to_null: true
-    avoid_null_checks_in_equality_operators: true
     avoid_return_types_on_setters: true
     avoid_shadowing_type_parameters: true
     avoid_types_as_parameter_names: true
@@ -228,8 +223,53 @@ linter:
     avoid_returning_this: true
     type_annotate_public_apis: true
     avoid_types_on_closure_parameters: true
-    avoid_private_typedef_functions: true
-    avoid_positional_boolean_parameters: true
     hash_and_equals: true
     avoid_equals_and_hash_code_on_mutable_classes: true
     unnecessary_underscores: true
+    simple_directive_paths: true
+    var_with_no_type_annotation: true
+    empty_container_bodies: true
+    initialize_in_field_declaration: true
+    unnecessary_const_in_enum_constructor: true
+    unnecessary_primary_constructor_body: true
+    unnecessary_type_name_in_constructor: true
+    use_declaring_parameters: true
+    unnecessary_ignore: true
+    avoid_redundant_argument_values: true
+    avoid_dynamic_calls: true
+    cast_nullable_to_non_nullable: true
+    unreachable_from_main: true
+    use_colored_box: true
+    use_decorated_box: true
+    avoid_type_to_string: true
+    async_return_with_no_await: true
+
+    # Enabled (lint review 2026-11-12)
+    avoid_multiple_declarations_per_line: true
+    combinators_ordering: true
+    deprecated_consistency: true
+    deprecated_member_use_from_same_package: true
+    eol_at_end_of_file: true
+    matching_super_parameters: true
+    migrate_design_widgets: true
+    missing_code_block_language_in_doc_comment: true
+    no_literal_bool_comparisons: true
+    no_self_assignments: true
+    noop_primitive_operations: true
+    prefer_null_aware_method_calls: true
+    sized_box_shrink_expand: true
+    specify_nonobvious_property_types: true
+    tighten_type_of_initializing_formals: true
+    unnecessary_breaks: true
+    unnecessary_null_aware_operator_on_extension_on_nullable: true
+    unnecessary_null_checks: true
+    use_enums: true
+    use_is_even_rather_than_modulo: true
+    use_test_throws_matchers: true
+    use_truncating_division: true
+
+    # Experimental / unreleased on dart.dev (Dart 3.14)
+    annotate_redeclares: true
+    avoid_futureor_void: true
+    implicit_reopen: true
+    no_default_cases: true

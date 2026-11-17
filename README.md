@@ -28,7 +28,7 @@ or in `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  alembic: ^0.7.0
+  alembic: ^1.0.0
 ```
 
 Then import it:

@@ -1,14 +1,15 @@
 import 'package:alembic/alembic.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../common/widget/app.dart';
 
 /// {@template settings_dialog}
-/// The content of a dialog page; it pops `true` or `false` to its `pushForResult`.
+/// The content of a dialog page; it pops `true` or `false` to its
+/// `pushForResult`.
 /// {@endtemplate}
 class SettingsDialog extends StatelessWidget {
   /// {@macro settings_dialog}
-  const SettingsDialog({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) => AlertDialog(
@@ -18,8 +19,14 @@ class SettingsDialog extends StatelessWidget {
       'Settings pages: ${context.alembic.state.length}',
     ),
     actions: [
-      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-      TextButton(onPressed: () => context.alembic.pop(true), child: const Text('OK')),
+      TextButton(
+        onPressed: () => Navigator.pop(context, false),
+        child: const Text('Cancel'),
+      ),
+      TextButton(
+        onPressed: () => context.alembic.pop(true),
+        child: const Text('OK'),
+      ),
     ],
   );
 }

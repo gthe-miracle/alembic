@@ -1,7 +1,7 @@
 /// Declarative Navigator 2.0 navigation built on widgets only.
 ///
-/// The navigation state is a list of pages owned by an [AlembicController]: every change goes through its guards, and
-/// an [Alembic] widget renders it.
+/// The navigation state is a list of pages owned by an [AlembicController]:
+/// every change goes through its guards, and an [Alembic] widget renders it.
 /// ```dart
 /// import 'package:alembic/alembic.dart';
 ///

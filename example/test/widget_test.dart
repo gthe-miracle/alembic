@@ -1,6 +1,6 @@
 import 'package:example/src/common/widget/app.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<bool> _back(WidgetTester tester) async {
   final handled = await tester.binding.handlePopRoute();
@@ -9,7 +9,9 @@ Future<bool> _back(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('settings scope, dialog result, sheet, then back all the way', (tester) async {
+  testWidgets('settings scope, dialog result, sheet, then back all the way', (
+    tester,
+  ) async {
     await tester.pumpWidget(const App());
     await tester.pumpAndSettle();
     expect(find.text('Pages: home'), findsOneWidget);
@@ -34,6 +36,10 @@ void main() {
     expect(await _back(tester), isTrue, reason: 'leaves the settings scope');
     expect(find.text('Pages: home'), findsOneWidget);
 
-    expect(await _back(tester), isFalse, reason: 'the root page lets the platform close the app');
+    expect(
+      await _back(tester),
+      isFalse,
+      reason: 'the root page lets the platform close the app',
+    );
   });
 }
