@@ -3,6 +3,10 @@
 - **Breaking:** a guard that throws now cancels the change instead of being skipped, so a broken rule, e.g. an auth
   guard, never lets through what it was there to stop. The error is still reported to `FlutterError`. A guard that
   throws on the initial state makes the constructor throw its `ArgumentError`
+- **Breaking:** `AlembicSheetPage` is at most 640 wide and centered, as in Material 3, instead of spanning the width on
+  tablets, desktop and in landscape. Its child gets a loose width, so a child that does not fill it, e.g. a `Column`
+  without `CrossAxisAlignment.stretch`, is centered at its own width, on phones too. Wrap it in
+  `SizedBox(width: double.infinity)` to keep it full width
 - The default key of a page asserts in debug mode that every argument has a `toString()` of its own: two values
   printed as `Instance of 'User'` gave one key, and the pages silently became one screen. Override `key` for such pages
 - `AlembicPage` takes `canPop` and `onPopInvoked` and passes them to `Page`

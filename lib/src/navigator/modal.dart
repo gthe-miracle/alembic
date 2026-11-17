@@ -162,8 +162,15 @@ final class _SheetRoute extends PopupRoute<Object?> {
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     Widget sheet = NotificationListener<DraggableScrollableNotification>(
       onNotification: _extentChanged,
-      child: KeyedSubtree(key: _childKey, child: _page.child),
+      child: KeyedSubtree(
+        key: _childKey,
+        child: Center(
+          heightFactor: 1,
+          child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 640), child: _page.child),
+        ),
+      ),
     );
+
     if (_page.enableDrag) {
       sheet = RawGestureDetector(
         excludeFromSemantics: true,
@@ -180,6 +187,7 @@ final class _SheetRoute extends PopupRoute<Object?> {
         child: sheet,
       );
     }
+
     sheet = AnimatedBuilder(
       animation: animation,
       builder: (context, child) => Semantics(
